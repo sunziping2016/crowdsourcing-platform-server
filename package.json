@@ -1,0 +1,16 @@
+{
+  "name": "crowdsourcing-platform-server",
+  "version": "0.1.0",
+  "description": "Server Side for Our Crowdsourcing Platform",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunziping2016/crowdsourcing-platform-server.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sunziping2016/crowdsourcing-platform-server/issues"
+  },
+  "homepage": "https://github.com/sunziping2016/crowdsourcing-platform-server#readme"
+}
