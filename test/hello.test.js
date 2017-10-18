@@ -1,14 +1,16 @@
-const server = new (require('../src/server'))();
+const {startServer, stopServer} = require('./helper');
 const assert = require('assert');
 
 describe('A hello world test', () => {
-  let request;
+  // eslint-disable-next-line no-unused-vars
+  let request, server;
 
   before(async () => {
-    await server.start(require('../config.json'));
-    request = require('supertest')(server.app.context.global.server);
+    [request, server] = await startServer();
   });
-  before(() => server.stop());
+  before(async () => {
+    await stopServer();
+  });
 
   describe('when GET /', () => {
     it('should return hello', () =>
