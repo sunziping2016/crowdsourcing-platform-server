@@ -4,8 +4,8 @@
   "description": "Server Side for Our Crowdsourcing Platform",
   "scripts": {
     "start": "node src/app",
-    "lint": "eslint src test",
-    "test": "mocha 'test/**/*.js'"
+    "lint": "eslint src test app.js",
+    "test": "mocha 'test/**/*.test.js'"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,24 @@
   "devDependencies": {
     "eslint": "^4.9.0",
     "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
     "mocha": "^4.0.1",
     "supertest": "^3.0.0"
+  },
+  "dependencies": {
+    "chalk": "^2.2.0",
+    "commander": "^2.11.0",
+    "koa": "^2.3.0",
+    "koa-qs": "^2.0.0",
+    "koa-router": "^7.2.1",
+    "mongoose": "^4.12.3",
+    "nodemailer": "^4.2.0",
+    "redis": "^2.8.0",
+    "socket.io": "^2.0.3",
+    "socket.io-redis": "^5.2.0",
+    "winston": "^2.4.0"
   }
 }

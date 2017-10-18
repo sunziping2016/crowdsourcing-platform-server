@@ -1,0 +1,24 @@
+{
+  "host": "localhost",
+  "port": 8000,
+  "site": "https://YOUR.DOMAIN",
+  "db": "mongodb://localhost/crowdsource",
+  "redis": "redis://localhost/",
+  "wechat": {
+    "token": "WECHAT_TOKEN",
+    "appid": "WECHAT_APPID",
+    "appsecret": "WECHAT_APPSECRET",
+    "encodingAESKey": "WECHAT_ENCODING_AES_KEY"
+  },
+  "email": {
+    "host": "SMTP.SITE",
+    "port": 465,
+    "secure": true,
+    "auth": {
+      "user": "EMAIL_USERNAME",
+      "pass": "EMAIL_PASSWORD"
+    }
+  },
+  "cluster": false,
+  "log-level": "info"
+}
