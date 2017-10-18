@@ -5,6 +5,8 @@
   "scripts": {
     "start": "node src/app",
     "lint": "eslint src test app.js",
+    "docs": "jsdoc -c .jsdoc.json",
+    "gh-pages": "gh-pages -d dist/crowdsourcing-platform-server",
     "test": "mocha 'test/**/*.test.js'"
   },
   "repository": {
@@ -23,6 +25,9 @@
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
+    "gh-pages": "^1.0.0",
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3",
     "mocha": "^4.0.1",
     "supertest": "^3.0.0"
   },

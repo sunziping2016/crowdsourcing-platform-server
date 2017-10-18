@@ -1,20 +1,22 @@
 sudo: false
 language: node_js
 node_js:
-- node
+  - node
 services:
-- mongodb
-- redis-server
+  - mongodb
+  - redis-server
 cache:
   directories:
-  - node_modules
+    - node_modules
 env:
   - CROWDSOURCE_CONFIG_FILE=./config.travis.json
 before_script:
-- npm prune
+  - npm prune
 scripts:
-- npm run lint
-- npm run test
+  - npm run lint
+  - npm run test
+  - npm run docs
+  - npm run gh-pages
 before_install:
-- openssl aes-256-cbc -K $encrypted_d9ec00f8c0f2_key -iv $encrypted_d9ec00f8c0f2_iv
-  -in config.travis.json.enc -out config.travis.json -d
+  - openssl aes-256-cbc -K $encrypted_d9ec00f8c0f2_key -iv $encrypted_d9ec00f8c0f2_iv
+    -in config.travis.json.enc -out config.travis.json -d
