@@ -1,5 +1,6 @@
-# 目录
+[![Build Status](https://travis-ci.org/sunziping2016/crowdsourcing-platform-server.svg?branch=master)](https://travis-ci.org/sunziping2016/crowdsourcing-platform-server)
 
+# 目录
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 <!-- code_chunk_output -->
