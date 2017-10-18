@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Server Side for Our Crowdsourcing Platform",
   "scripts": {
+    "start": "node src/app",
+    "lint": "eslint src test",
+    "test": "mocha 'test/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -12,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/sunziping2016/crowdsourcing-platform-server/issues"
   },
-  "homepage": "https://github.com/sunziping2016/crowdsourcing-platform-server#readme"
+  "homepage": "https://github.com/sunziping2016/crowdsourcing-platform-server#readme",
+  "devDependencies": {
+    "eslint": "^4.9.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "supertest": "^3.0.0"
+  }
 }

@@ -1,0 +1,12 @@
+sudo: false
+language: node_js
+node_js:
+  - node
+cache:
+  directories:
+    - node_modules
+before_script:
+  - npm prune
+scripts:
+  - npm run lint
+  - npm run test
