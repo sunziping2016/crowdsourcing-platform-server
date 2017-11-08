@@ -1,3 +1,8 @@
+/**
+ * 包含了整个服务端类，供`app.js`启动或测试调用。
+ * @module server
+ */
+
 const http = require('http');
 const Koa = require('koa');
 const mongoose = require('mongoose');
@@ -10,7 +15,25 @@ const Models = require('./models');
 
 mongoose.Promise = Promise;
 
+/**
+ * 整个服务端类。这里初始化了整个项目传递各种对象的`global`对象。
+ *
+ * `global`对象包含以下几个字段：
+ * 1. `config`：项目的配置
+ * 2. `db`、`redis`：Mongoose链接和Redis链接
+ * 3. `sio`：Socket.IO对象
+ * 4. `email`：Nodemailer对象
+ * 5. `users`...：各种models
+ *
+ * 对于Koa的中间件来讲，这个对象可通过`ctx.global`获得。
+ */
 class Server {
+  /**
+   * 启动服务端，初始化所有model和路由等等。
+   *
+   * @param config {object} 项目配置，参见`example.config.json`
+   * @returns {Promise.<void>} 监听成功后resolve，否则reject
+   */
   async start(config) {
     /* ==== 初始化上下文环境 ==== */
     const app = this.app = new Koa();
@@ -47,10 +70,14 @@ class Server {
         .listen(config.port, config.host, resolve)
         .once('error', reject)
     );
-    app.emit('started');
   }
+
+  /**
+   * 停止服务器，停止完毕后可以再调用调用`start()`
+   *
+   * @returns {Promise.<void>} 完成后resolve，否则reject
+   */
   async stop() {
-    this.app.emit('stopping');
     const {db, redis, sioRedis, server, sio} = this.app.context.global;
     redis.quit();
     sioRedis.quit();
