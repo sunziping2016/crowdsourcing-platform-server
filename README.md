@@ -13,6 +13,12 @@
 	* [2.1 数据表](#21-数据表)
 		* [2.1.1 `users`表](#211-users表)
 		* [2.1.2 `wechatUsers`表](#212-wechatusers表)
+		* [2.1.3 `tasks`表](#213-tasks表)
+		* [2.1.4 牙片任务](#214-牙片任务)
+			* [2.1.4.1 `tests`表](#2141-tests表)
+			* [2.1.4.2 `testDistribution`表](#2142-testdistribution表)
+			* [2.1.4.3 `assignments`表](#2143-assignments表)
+			* [2.1.4.4 `distribution`表](#2144-distribution表)
 
 <!-- /code_chunk_output -->
 
@@ -98,7 +104,7 @@ npm run gh-pages
 | email | String | 未删且存在则唯一，可选 |
 | wechatId | String, ref `wechatUsers` | 未删且存在则唯一，可选 |
 | settings | any (Object) | 见下，用户设置，仅自己可见 |
-| status | Integer | 状态：有效、冻结、删除（注销） |
+| status | Integer | 0：正常，1：冻结，2：删除 |
 | createdAt | Date | |
 | updatedAt | Date | |
 | deleted | Boolean | 是否删除，必要 |
@@ -125,3 +131,79 @@ npm run gh-pages
 | language | String | |
 | avatar | String | 相对于 uploads 目录的位置 |
 | avatarThumbnail | String | 相对于 uploads 目录的位置 |
+
+### 2.1.3 `tasks`表
+
+| 字段 | 类型 | 注解 |
+|:---:|:---|:---|
+| \_id | ObjectId | |
+| taskname | String | 必要 |
+| publisher | String, ref `users` | 存在且唯一 |
+| description | string | 必要，任务介绍 |
+| tags | Array\<String\> | 可选 |
+| leftMoney | Float | 必要，剩余资金 |
+| spentMeney | Float | 必要，已消费的资金 |
+| deadline | Date | 可选 |
+| createdAt | Date | |
+| submittedAt | Date | |
+| publishedAt | Date | |
+| completedAt | Date | |
+| updatedAt | Date | |
+| status | Integer | 0：待提交，1：待审核，2：待发布，3：已发布，4：已完成，5：已删除 |
+
+### 2.1.4 牙片任务
+
+`tasks` 中追加字段：
+
+| 字段 | 类型 | 注解 |
+|:---:|:---|:---|
+| question | String | 作业问题 |
+| options | Array\<String\> | 选项 |
+| allowedUsers | Array\<ref `users`\> | 可以领取任务的用户 |
+| testAccuracy | Float | 测试通过的准确率阈值 |
+| testAmount | Integer | 测试题的数量 |
+| requiredTimes | Interger | 必要，每个作业需要的完成次数 |
+| requiredAccuracy | Float | 必要，每个作业完成需要的准确率 |
+| assignmentAmount | Integer | 每组作业的作业数量 |
+| timeout | Integer | 超时时间 |
+
+#### 2.1.4.1 `tests`表
+
+| 字段 | 类型 | 注解 |
+|:---:|:---|:---|
+| \_id | ObjectId | |
+| pic1 | String | 必要，图一的路径 |
+| pic2 | String | 必要，图二的路径 |
+| answer | String | 正确选项 |
+
+#### 2.1.4.2 `testDistribution`表
+
+| 字段 | 类型 | 注解 |
+|:---:|:---|:---|
+| \_id | ObjectId | |
+| user | String, ref `users` | 必要，分配到该组测试的用户 |
+| testResult | Array\<{test, answer}> | 结果，是`test`的`id`和`answer`的数组 |
+| createAt | Date | 测试组的创建时间 |
+| submittedAt | Date | 提交时间 |
+| status | Interger | 0：未完成，1：超时，2：通过，3：未通过 |
+
+#### 2.1.4.3 `assignments`表
+
+| 字段 | 类型 | 注解 |
+|:---:|:---|:---|
+| \_id | ObjectId | |
+| pic1 | String | 必要，图一的路径 |
+| pic2 | String | 必要，图二的路径 |
+| submittedTimes | Integer | 必要，已提交的次数 |
+| result | Array\<{user, option}\> | 提交的结果，是提交者的`id`和提交的`option`的数组 |
+
+#### 2.1.4.4 `distribution`表
+
+| 字段 | 类型 | 注解 |
+|:---:|:---|:---|
+| \_id | ObjectId | |
+| user | String, ref `users` | 必要，分配到该组作业的用户 |
+| assignmentResult | Array\<{assignment, option}> | 结果，是`assignment`的`id`和`option`的数组 |
+| createAt | Date | 作业组的创建时间 |
+| submittedAt | Date | 提交时间 |
+| status | Interger | 0：待完成，1：超时，2：已提交，3：已评判，4：已领取收益 |
