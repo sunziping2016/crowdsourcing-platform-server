@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Server Side for Our Crowdsourcing Platform",
   "scripts": {
-    "start": "node src/app",
+    "start": "node app",
     "lint": "eslint src test app.js",
     "docs": "jsdoc -c .jsdoc.json",
     "gh-pages": "gh-pages -d dist/crowdsourcing-platform-server",

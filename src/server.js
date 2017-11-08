@@ -25,7 +25,7 @@ class Server {
       subClient: sioRedis
     }));
     const email = mailer.createTransport(config.email);
-    app.context.global = {
+    const global = {
       config,              // 配置选项
       db,                  // MongoDB数据库的连接
       redis,               // Redis数据库的连接
@@ -34,8 +34,9 @@ class Server {
       sio,                 // Socket.IO服务端
       email                // E-mail邮件传输
     };
-    const models = Models(app);
-    Object.assign(app.context.global, models); // 各种Models
+    const models = await Models(global);
+    Object.assign(global, models); // 各种Models
+    app.context.global = global;
     /* ==== 设置路由 ==== */
     qs(app);
 

@@ -1,4 +1,4 @@
-module.exports = function (config, db, sio) {
+module.exports = async function (global) {
   return {
   };
 };
