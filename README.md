@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sunziping2016/crowdsourcing-platform-server.svg?branch=master)](https://travis-ci.org/sunziping2016/crowdsourcing-platform-server)
+[![Build Status](https://travis-ci.com/sunziping2016/crowdsourcing-platform-server.svg?token=2FxtqdbFxQyVuaWRjsdf&branch=master)](https://travis-ci.com/sunziping2016/crowdsourcing-platform-server)
 
 # 目录
 
