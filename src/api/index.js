@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const {errorsEnum, coreThrow} = require('../core/errors');
+const UserRouter = require('./user');
 
 async function errorHandler(ctx, next) {
   try {
@@ -28,11 +29,13 @@ async function errorHandler(ctx, next) {
 
 module.exports = function () {
   const router = new Router();
+  const userRouter = new UserRouter();
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => {
       coreThrow(errorsEnum.PARSE, 'Cannot parse body');
     }
   }));
+  router.use('/user', userRouter.routes(), userRouter.allowedMethods());
   return router;
 };
