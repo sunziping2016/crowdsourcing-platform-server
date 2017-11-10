@@ -19,6 +19,7 @@
       "pass": "EMAIL_PASSWORD"
     }
   },
+  "upload-dir": "uploads",
   "cluster": false,
   "log-level": "info"
 }

@@ -11,7 +11,10 @@ const Sio = require('socket.io');
 const SioRedis = require('socket.io-redis');
 const mailer = require('nodemailer');
 const qs = require('koa-qs');
+const Router = require('koa-router');
+const koaLogger = require('./koa-logger');
 const Models = require('./models');
+const Api = require('./api');
 
 mongoose.Promise = Promise;
 
@@ -36,6 +39,7 @@ class Server {
    */
   async start(config) {
     /* ==== 初始化上下文环境 ==== */
+    config = Server.normalizeConfig(config || {});
     const app = this.app = new Koa();
     const db = await mongoose.createConnection(config.db,
       {useMongoClient: true});
@@ -47,29 +51,52 @@ class Server {
       pubClient: redis,
       subClient: sioRedis
     }));
-    const email = mailer.createTransport(config.email);
     const global = {
       config,              // 配置选项
       db,                  // MongoDB数据库的连接
       redis,               // Redis数据库的连接
       sioRedis,            // Redis数据库的连接，专门用于Socket.IO的监听事件
       server,              // HTTP server实例
-      sio,                 // Socket.IO服务端
-      email                // E-mail邮件传输
+      sio                  // Socket.IO服务端
     };
+    if (config.email)
+      global.email = mailer.createTransport(config.email); // E-mail邮件传输
     const models = await Models(global);
     Object.assign(global, models); // 各种Models
     app.context.global = global;
     /* ==== 设置路由 ==== */
     qs(app);
-
-    app.use(async ctx => ctx.body = 'hello, world!');
-
+    app.use(koaLogger);
+    const router = new Router();
+    const api = Api();
+    router.use('/api', api.routes(), api.allowedMethods());
+    app.use(router.routes());
+    app.use(router.allowedMethods());
     await new Promise((resolve, reject) =>
       server
         .listen(config.port, config.host, resolve)
         .once('error', reject)
     );
+  }
+
+  /**
+   * 将默认的项目配置与config对象合并后返回。
+   *
+   * @param config {object} 项目配置
+   * @return {object} 添加了默认配置的项目配置
+   */
+  static normalizeConfig(config) {
+    const defaultConfig = {
+      host: 'localhost',
+      port: '8000',
+      db: 'mongodb://localhost/crowdsource',
+      redis: 'redis://localhost/',
+      'upload-dir': 'uploads'
+    };
+    Object.assign(defaultConfig, config);
+    if (defaultConfig.site === undefined)
+      defaultConfig.site = `http://${defaultConfig.host}:${defaultConfig.port}`;
+    return defaultConfig;
   }
 
   /**
