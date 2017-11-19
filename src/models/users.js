@@ -5,7 +5,7 @@
  */
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
-const {addCreatedAt, addUpdatedAt, addFileFields} = require('./hook');
+const {addCreatedAt, addUpdatedAt, addFileFields} = require('./hooks');
 
 /**
  * 创建`users` model。
@@ -38,8 +38,6 @@ module.exports = function (global) {
    * `users` schema对象，包含以下字段：
    *  - `username`：字符串，必要，未删除用户应当唯一
    *  - `password`：密码，必要，可以为`null`（此时密码验证永远失败）
-   *  - `secureUpdatedAt`：安全更新时间，自动字段。用户认证时，对于请求续JWT的，如果发生了安全
-   *    更新，则会续失败。该字段在密码变更的时候自动更新
    *  - `email`：字符串，可选，未删除用户应当唯一
    *  - `wechatId`：字符串，可选，未删除用户应当唯一
    *  - `avatar`：字符串，可选，头像文件的位置（自动删除旧文件）
@@ -54,7 +52,6 @@ module.exports = function (global) {
   const userSchema = new mongoose.Schema({
     username: {type: String, required: true},
     password: {type: String, required: true},
-    secureUpdatedAt: {type: Date},
     email: {type: String},
     wechatId: {type: String},
     nickname: {type: String},
@@ -97,7 +94,6 @@ module.exports = function (global) {
   userSchema.statics.roleEnum = roleEnum;
 
   addCreatedAt(userSchema);
-  addCreatedAt(userSchema, 'secureUpdatedAt');
   addUpdatedAt(userSchema);
   addFileFields(userSchema, ['avatar', 'avatarThumbnail64'], config['upload-dir']);
 

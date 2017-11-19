@@ -11,19 +11,33 @@ function randomAlnumString(length) {
 
 function redisify(object) {
   let result = [];
-  for (let key in object) {
-    if (!object.hasOwnProperty(key))
-      continue;
-    result.push(key);
+  Object.keys(object).forEach(key => {
     if (typeof object[key] === 'object')
       result.push(JSON.stringify(object[key]));
     else
       result.push(object[key]);
-  }
+  });
   return result;
+}
+
+function promisify(func, settings) {
+  return function (...args) {
+    return new Promise((resolve, reject) => {
+      args.push((err, ...values) => {
+        if (err)
+          reject(err);
+        else if (settings && settings.multiArgs)
+          resolve(values);
+        else
+          resolve(values[0]);
+      });
+      func.apply((settings && settings.thisArg) || settings || this, args);
+    });
+  };
 }
 
 module.exports = {
   randomAlnumString,
-  redisify
+  redisify,
+  promisify
 };

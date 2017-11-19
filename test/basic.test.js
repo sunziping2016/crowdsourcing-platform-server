@@ -6,7 +6,7 @@ describe('Basic API test', () => {
   before(async () => {
     request = await startServer();
   });
-  before(async () => {
+  after(async () => {
     await stopServer();
   });
 
@@ -21,7 +21,7 @@ describe('Basic API test', () => {
     );
   });
 
-  describe('when GET /api/asdfghjkl', () => {
+  describe('when GET /api/foobar', () => {
     it('should return 404', () =>
       request
         .get('/')

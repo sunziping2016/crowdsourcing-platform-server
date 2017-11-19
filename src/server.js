@@ -15,6 +15,8 @@ const Router = require('koa-router');
 const koaLogger = require('./koa-logger');
 const Models = require('./models');
 const Api = require('./api');
+const {promisify} = require('./utils');
+const redisCommands = require('redis-commands');
 
 mongoose.Promise = Promise;
 
@@ -47,6 +49,9 @@ class Server {
     const sioRedis = Redis.createClient(config.redis);
     const server = http.createServer(app.callback());
     const sio = Sio(server);
+    redisCommands.list.forEach(key =>
+      redis[key + 'Async'] = promisify(redis[key], redis)
+    );
     sio.adapter(SioRedis({
       pubClient: redis,
       subClient: sioRedis
@@ -72,11 +77,12 @@ class Server {
     router.use('/api', api.routes(), api.allowedMethods());
     app.use(router.routes());
     app.use(router.allowedMethods());
-    await new Promise((resolve, reject) =>
-      server
-        .listen(config.port, config.host, resolve)
-        .once('error', reject)
-    );
+    if (config.port !== undefined)
+      await new Promise((resolve, reject) =>
+        server
+          .listen(config.port, config.host, resolve)
+          .once('error', reject)
+      );
   }
 
   /**
@@ -88,7 +94,6 @@ class Server {
   static normalizeConfig(config) {
     const defaultConfig = {
       host: 'localhost',
-      port: '8000',
       db: 'mongodb://localhost/crowdsource',
       redis: 'redis://localhost/',
       'upload-dir': 'uploads'
