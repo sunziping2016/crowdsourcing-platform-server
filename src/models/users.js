@@ -1,5 +1,5 @@
 /**
- * 用户models，存储了所有用户（包括管理员和普通用户）的所有权限信息。
+ * 用户models，存储了所有用户（包括管理员和普通用户）的信息。
  *
  * @module models/users
  */
@@ -47,7 +47,7 @@ module.exports = function (global) {
    *  - `status`：数字，必要，状态，可通过静态成员`statusEnum`获得所有的状态
    *  - `roles`：数字，必要，权限，可通过静态成员`roleEnum`获得所有的权限，可通过位运算组合
    *  - `settings`：用户自定义的设置
-   * @type {mongoose.Schema}
+   *  @class User
    */
   const userSchema = new mongoose.Schema({
     username: {type: String, required: true},
@@ -90,17 +90,38 @@ module.exports = function (global) {
   });
   userSchema.index({status: 1});
 
+  /**
+   * 用户的状态到编号的映射
+   * @name module:models/users~User.statusEnum
+   */
   userSchema.statics.statusEnum = statusEnum;
+  /**
+   * 用户的角色到编号的映射
+   * @name module:models/users~User.roleEnum
+   */
   userSchema.statics.roleEnum = roleEnum;
 
   addCreatedAt(userSchema);
   addUpdatedAt(userSchema);
   addFileFields(userSchema, ['avatar', 'avatarThumbnail64'], config['upload-dir']);
 
+  /**
+   * 设置用户的密码
+   * @param password {string} 新密码
+   * @return {Promise.<void>}
+   * @function module:models/users~User#setPassword
+   */
   userSchema.methods.setPassword = async function (password) {
     this.password = password ? await bcrypt.hash(password, 10) : null;
     this.secureUpdatedAt = new Date();
   };
+
+  /**
+   * 检查密码正确与否
+   * @param password {string} 要检查的密码
+   * @return {Promise.<*>}
+   * @function module:models/users~User#checkPassword
+   */
   userSchema.methods.checkPassword = async function (password) {
     if (!this.password)
       return false;
