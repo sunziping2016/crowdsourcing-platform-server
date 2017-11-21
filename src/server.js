@@ -20,6 +20,13 @@ const redisCommands = require('redis-commands');
 
 mongoose.Promise = Promise;
 
+redisCommands.list.forEach(key =>
+  Redis.RedisClient.prototype[key + 'Async'] = promisify(Redis.RedisClient.prototype[key])
+);
+['exec', 'exec_atomic'].forEach(key =>
+  Redis.Multi.prototype[key + 'Async'] = promisify(Redis.Multi.prototype[key])
+);
+
 /**
  * 整个服务端类。这里初始化了整个项目传递各种对象的`global`对象。
  *
@@ -43,15 +50,13 @@ class Server {
     /* ==== 初始化上下文环境 ==== */
     config = Server.normalizeConfig(config || {});
     const app = this.app = new Koa();
+    app.proxy = true;
     const db = await mongoose.createConnection(config.db,
       {useMongoClient: true});
     const redis = Redis.createClient(config.redis);
     const sioRedis = Redis.createClient(config.redis);
     const server = http.createServer(app.callback());
     const sio = Sio(server);
-    redisCommands.list.forEach(key =>
-      redis[key + 'Async'] = promisify(redis[key], redis)
-    );
     sio.adapter(SioRedis({
       pubClient: redis,
       subClient: sioRedis

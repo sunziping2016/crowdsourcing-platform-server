@@ -1,6 +1,6 @@
 /**
  * 该model主要负责JWT的颁发和吊销。传统的JWT是自签名无状态的，存在着无法吊销的问题，
- * 这里我们采用给所有颁发的jwt一个id，建立索引的方式，做到可撤销的JWT。
+ * 这里我们采用给所有颁发的JWT一个id，建立索引的方式，做到可撤销的JWT。
  *
  * @module models/jwt
  */
@@ -34,6 +34,8 @@ class RevokedError extends jsonWebToken.JsonWebTokenError {
  * - NotBeforeError: 本项目不会用到
  * - TokenExpiredError: JWT过期，可能会在`verify()`的时候发生
  * - RevokedError: JWT被撤回，可能会在`verify()`的时候发生
+ *
+ * 该类实例化的对象为`global.jwt`
  */
 class Jwt {
   /**
@@ -143,7 +145,7 @@ class Jwt {
 }
 
 /**
- * 创建Jwt model，同时主进程会初始化全局的SecretKey
+ * 创建JWT model，同时主进程会初始化全局的SecretKey
  *
  * @param global {object} 全局对象，主要使用了以下字段：
  *   - redis: Redis客户端

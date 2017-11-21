@@ -9,17 +9,6 @@ function randomAlnumString(length) {
   return result;
 }
 
-function redisify(object) {
-  let result = [];
-  Object.keys(object).forEach(key => {
-    if (typeof object[key] === 'object')
-      result.push(JSON.stringify(object[key]));
-    else
-      result.push(object[key]);
-  });
-  return result;
-}
-
 function promisify(func, settings) {
   return function (...args) {
     return new Promise((resolve, reject) => {
@@ -38,6 +27,5 @@ function promisify(func, settings) {
 
 module.exports = {
   randomAlnumString,
-  redisify,
   promisify
 };

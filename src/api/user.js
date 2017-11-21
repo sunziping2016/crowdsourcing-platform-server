@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 
 async function createUser(ctx) {
+
 }
 
 async function findUser(ctx) {

@@ -30,6 +30,12 @@ async function errorHandler(ctx, next) {
 module.exports = function () {
   const router = new Router();
   const userRouter = new UserRouter();
+  router.use((ctx, next) => {
+    ctx.params = {
+      ip: ctx.ip,
+      transport: 'ajax'
+    };
+  });
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => {
