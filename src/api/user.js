@@ -1,7 +1,8 @@
 const Router = require('koa-router');
+const coreUser = require('../core/user');
 
 async function createUser(ctx) {
-
+  ctx.body = await coreUser.createUser(ctx.params, ctx.global);
 }
 
 async function findUser(ctx) {

@@ -30,18 +30,23 @@ async function errorHandler(ctx, next) {
 module.exports = function () {
   const router = new Router();
   const userRouter = new UserRouter();
-  router.use((ctx, next) => {
-    ctx.params = {
-      ip: ctx.ip,
-      transport: 'ajax'
-    };
-  });
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => {
       coreThrow(errorsEnum.PARSE, 'Cannot parse body');
     }
   }));
+  router.use((ctx, next) => {
+    ctx.params = {
+      ip: ctx.ip,
+      transport: 'ajax'
+    };
+    if (ctx.request.body)
+      ctx.params.data = ctx.request.body;
+    if (ctx.query)
+      ctx.params.query = ctx.query;
+    return next();
+  });
   router.use('/user', userRouter.routes(), userRouter.allowedMethods());
   return router;
 };
