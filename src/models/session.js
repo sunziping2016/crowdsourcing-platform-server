@@ -8,7 +8,8 @@ const logger = require('winston');
 const {randomAlnumString} = require('../utils');
 
 /**
- * 临时回话类。
+ * 临时回话类。示例对象包括
+ *   - emailSession `expire`1天
  */
 class RedisSession {
   /**
@@ -16,7 +17,7 @@ class RedisSession {
    * @param client {redis.RedisClient} redis客户端
    * @param options {object} 选项，可以有以下字段
    *   - prefix {string} 数据库的前缀，默认为`sess`
-   *   - expire {number} 默认过期时长，默认为null，表示不过期
+   *   - expire {number} 默认过期时长，单位s，默认为null，表示不过期
    *   - indices {Array.<string|Array.<string>>} 需要索引的字段
    *   - idLength {number} 随机的ID长度，默认为40。
    *   - convertTo {function} 保存数据时的转换函数，默认为原封不动（这会导致所有字段变为对应的
@@ -34,7 +35,6 @@ class RedisSession {
     this.convertTo = options.convertTo || null;
     this.convertFrom = options.convertFrom || null;
   }
-
   /**
    * 保存数据
    * @param sid {string} optional，回话id，如果没有提供则随机生成
@@ -76,18 +76,37 @@ class RedisSession {
     await command.execAsync();
     return sid;
   }
+  /**
+   * 生成随机的Id
+   * @return {*}
+   */
   genId() {
     return randomAlnumString(this.idLength);
   }
+  /**
+   * 载入回话
+   * @param sid {string} Id
+   * @return {Promise.<object>} 保存的回话
+   */
   async load(sid) {
     const result = await this.client.hgetallAsync(this.prefix + ':' + sid);
-    if (this.convertFrom)
+    if (result && this.convertFrom)
       return this.convertFrom(result);
     return result;
   }
+  /**
+   * 删除回话
+   * @param sid {string} Id
+   * @return {Promise.<void>}
+   */
   async remove(sid) {
     return this.client.delAsync(this.prefix + ':' + sid);
   }
+  /**
+   * 删除与索引一致的所有回话
+   * @param data {object} 索引
+   * @return {Promise.<Array.<string>>} 删除了的Id
+   */
   async removeByIndex(data) {
     const setName = this.prefix + ':' + Object.keys(data)
       .map(index => index + ':' + data[index]).join(':');
@@ -100,6 +119,11 @@ class RedisSession {
       await this.client.delAsync(items.map(x => this.prefix + ':' + x));
     return items;
   }
+  /**
+   * 载入并删除回话
+   * @param sid {string} Id
+   * @return {Promise.<object>} 保存的会话
+   */
   async loadAndRemove(sid) {
     const key = this.prefix + ':' + sid;
     const result = await this.client.multi()
@@ -120,10 +144,21 @@ const sessionOptions = {
   }
 };
 
-module.exports = async function (global) {
+/**
+ * 创建回话
+ * @param global {object}
+ *   - redis {redis.RedisClient} redis客户端
+ * @return {object}
+ */
+function createSessions(global) {
   const {redis} = global;
   const sessions = {};
   for (let name in sessionOptions)
     sessions[name] = new RedisSession(redis, sessionOptions[name]);
   return sessions;
+}
+
+module.exports = {
+  RedisSession,
+  createSessions
 };

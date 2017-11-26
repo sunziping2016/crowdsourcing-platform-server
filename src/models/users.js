@@ -20,7 +20,7 @@ module.exports = function (global) {
   // 请确保`DELETED`拥有最大的值，因为我们使用Partial Indexes的小于运算符来筛选未删除的元素
   const statusEnum = {
     VALID: 0,
-    FROZEN: 1,
+    BLOCKED: 1,
     DELETED: 2
   };
   const roleEnum = {
@@ -45,7 +45,15 @@ module.exports = function (global) {
    *  - `createdAt`：创建时间，自动字段
    *  - `updatedAt`：更新时间，自动字段
    *  - `status`：数字，必要，状态，可通过静态成员`statusEnum`获得所有的状态
+   *    - VALID：可用
+   *    - BLOCKED：用户被封禁
+   *    - DELETED：用户被删除（用户名和邮箱将被开放给新用户注册）
    *  - `roles`：数字，必要，权限，可通过静态成员`roleEnum`获得所有的权限，可通过位运算组合
+   *    - SUBSCRIBER：可以领取活动
+   *    - PUBLISHER：可以发布活动
+   *    - TASK_ADMIN：可以管理活动
+   *    - USER_ADMIN：可以管理用户
+   *    - SITE_ADMIN：可以管理网站
    *  - `settings`：用户自定义的设置
    *  @class User
    */

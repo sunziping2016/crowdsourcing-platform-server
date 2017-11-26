@@ -2,7 +2,7 @@
 
 # 目录
 
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=4 orderedList=false} -->
 <!-- code_chunk_output -->
 
 * [目录](#目录)
@@ -12,13 +12,14 @@
 * [2 设计](#2-设计)
 	* [2.1 数据表](#21-数据表)
 		* [2.1.1 `users`表](#211-users表)
-		* [2.1.2 `wechatUsers`表](#212-wechatusers表)
-		* [2.1.3 `tasks`表](#213-tasks表)
-		* [2.1.4 牙片任务](#214-牙片任务)
-			* [2.1.4.1 `tests`表](#2141-tests表)
-			* [2.1.4.2 `testDistribution`表](#2142-testdistribution表)
-			* [2.1.4.3 `assignments`表](#2143-assignments表)
-			* [2.1.4.4 `distribution`表](#2144-distribution表)
+		* [2.1.2 `tasks`表](#212-tasks表)
+		* [2.1.3 牙片任务](#213-牙片任务)
+			* [2.1.3.1 `tests`表](#2131-tests表)
+			* [2.1.3.2 `testDistribution`表](#2132-testdistribution表)
+			* [2.1.3.3 `assignments`表](#2133-assignments表)
+			* [2.1.3.4 `distribution`表](#2134-distribution表)
+	* [2.2 接口设计](#22-接口设计)
+		* [2.2.1 `users`接口设计](#221-users接口设计)
 
 <!-- /code_chunk_output -->
 
@@ -52,7 +53,7 @@
 
 因而整个项目模块之间的依赖如下：
 
-![模块依赖图](docs/module-dependency.svg)
+![模块依赖图](https://raw.githubusercontent.com/sunziping2016/crowdsourcing-platform-server/master/docs/module-dependency.svg)
 
 此外还有额外的配置：
 * `.editorconfig`：编辑器配置
@@ -96,44 +97,9 @@ npm run gh-pages
 
 ### 2.1.1 `users`表
 
-| 字段 | 类型 | 注解 |
-|:---:|:---|:---|
-| _id | ObjectId | |
-| username | String | 未删则唯一，必要 |
-| password | String | bcrypt，可为null（不可登录，强制重置密码） |
-| roles | Array<String> | 必要 |
-| email | String | 未删且存在则唯一，可选 |
-| wechatId | String, ref `wechatUsers` | 未删且存在则唯一，可选 |
-| settings | any (Object) | 见下，用户设置，仅自己可见 |
-| status | Integer | 0：正常，1：冻结，2：删除 |
-| createdAt | Date | |
-| updatedAt | Date | |
-| deleted | Boolean | 是否删除，必要 |
+见[Users的文档](https://sunziping2016.github.io/crowdsourcing-platform-server/0.1.0/module-models_users-User.html)。
 
-其中`roles`可以为以下几种：
-* subscriber： 可以领取任务
-* publisher：可以发布任务
-* taskAdmin：可以管理任务
-* userAdmin：可以管理用户
-* siteAdmin：可以对站点、微信进行设置
-
-`settings`待定。
-
-### 2.1.2 `wechatUsers`表
-
-注意除了`_id`外，别的都是可选。部分内容详见[微信公众平台 - 获取用户基本信息](https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140839)
-
-| 字段 | 类型 | 注解 |
-|:---:|:---|:---|
-| _id (alias openId) | ObjectId | |
-| subscribe | Boolean | |
-| nickname | String | |
-| gender | Number | |
-| language | String | |
-| avatar | String | 相对于 uploads 目录的位置 |
-| avatarThumbnail | String | 相对于 uploads 目录的位置 |
-
-### 2.1.3 `tasks`表
+### 2.1.2 `tasks`表
 
 | 字段 | 类型 | 注解 |
 |:---:|:---|:---|
@@ -152,7 +118,7 @@ npm run gh-pages
 | updatedAt | Date | |
 | status | Integer | 0：待提交，1：待审核，2：待发布，3：已发布，4：已完成，5：已删除 |
 
-### 2.1.4 牙片任务
+### 2.1.3 牙片任务
 
 `tasks` 中追加字段：
 
@@ -168,7 +134,7 @@ npm run gh-pages
 | assignmentAmount | Integer | 每组作业的作业数量 |
 | timeout | Integer | 超时时间 |
 
-#### 2.1.4.1 `tests`表
+#### 2.1.3.1 `tests`表
 
 | 字段 | 类型 | 注解 |
 |:---:|:---|:---|
@@ -177,7 +143,7 @@ npm run gh-pages
 | pic2 | String | 必要，图二的路径 |
 | answer | String | 正确选项 |
 
-#### 2.1.4.2 `testDistribution`表
+#### 2.1.3.2 `testDistribution`表
 
 | 字段 | 类型 | 注解 |
 |:---:|:---|:---|
@@ -188,7 +154,7 @@ npm run gh-pages
 | submittedAt | Date | 提交时间 |
 | status | Interger | 0：未完成，1：超时，2：通过，3：未通过 |
 
-#### 2.1.4.3 `assignments`表
+#### 2.1.3.3 `assignments`表
 
 | 字段 | 类型 | 注解 |
 |:---:|:---|:---|
@@ -198,7 +164,7 @@ npm run gh-pages
 | submittedTimes | Integer | 必要，已提交的次数 |
 | result | Array\<{user, option}\> | 提交的结果，是提交者的`id`和提交的`option`的数组 |
 
-#### 2.1.4.4 `distribution`表
+#### 2.1.3.4 `distribution`表
 
 | 字段 | 类型 | 注解 |
 |:---:|:---|:---|
@@ -208,3 +174,6 @@ npm run gh-pages
 | createAt | Date | 作业组的创建时间 |
 | submittedAt | Date | 提交时间 |
 | status | Interger | 0：待完成，1：超时，2：已提交，3：已评判，4：已领取收益 |
+
+## 2.2 接口设计
+### 2.2.1 `users`接口设计
