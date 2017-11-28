@@ -26,8 +26,14 @@ module.exports = function (global) {
     DELETED: 5
   };
 
-  // const taskSettingsSchema = new mongoose.Schema({
-  // });
+  const taskTypeEnum = {
+    IMAGE_COLLECTING: 0,
+    IMAGE_TAGGING: 1,
+    IMAGE_RECOGNIZING: 2
+  };
+
+  const taskSettingsSchema = new mongoose.Schema({
+  });
 
   /**
    * `tasks` schema对象，包含以下字段：
@@ -53,27 +59,33 @@ module.exports = function (global) {
    *  @class Task
    */
   const taskSchema = new mongoose.Schema({
-    taskName: {type: String, required: true},
+    name: {type: String, required: true},
     publisher: {type: String, required: true},
     description: {type: String, required: true},
     tags: {type: [String]},
-    leftMoney: {type: Number, required: true},
-    spentMoney: {type: Number, required: true},
-    deadline: {type: Date},
+    moneyLeft: {type: Number, required: true},
+    moneySpent: {type: Number, required: true},
+    expiredAt: {type: Date},
     submittedAt: {type: Date},
     publishedAt: {type: Date},
     completedAt: {type: Date},
     createdAt: {type: Date},
     updatedAt: {type: Date},
-    status: {type: Number, required: true}
+    status: {type: Number, required: true},
+    taskType: {type: Number, required: true},
+    settings: {type: taskSettingsSchema}
   });
 
   /**
-   * 用户的状态到编号的映射
+   * 任务的状态到编号的映射
    * @name module:models/tasks~Task.statusEnum
    */
   taskSchema.statics.statusEnum = statusEnum;
-
+  /**
+   * 任务的类型到编号的映射
+   * @name module:models/tasks~Task.statusEnum
+   */
+  taskSchema.statics.taskTypeEnum = taskTypeEnum;
   addCreatedAt(taskSchema);
   addUpdatedAt(taskSchema);
 
