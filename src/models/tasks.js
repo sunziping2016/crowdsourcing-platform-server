@@ -89,5 +89,4 @@ module.exports = function (global) {
   addCreatedAt(taskSchema);
   addUpdatedAt(taskSchema);
 
-  return db.model('tasks', taskSchema);
 };

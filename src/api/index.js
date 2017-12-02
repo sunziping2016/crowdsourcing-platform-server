@@ -2,6 +2,7 @@ const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const {errorsEnum, coreThrow} = require('../core/errors');
 const UserRouter = require('./user');
+const TaskRouter = require('./task');
 
 async function errorHandler(ctx, next) {
   try {
@@ -30,6 +31,7 @@ async function errorHandler(ctx, next) {
 module.exports = function () {
   const router = new Router();
   const userRouter = new UserRouter();
+  const taskRouter = new TaskRouter();
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => {
@@ -48,5 +50,6 @@ module.exports = function () {
     return next();
   });
   router.use('/user', userRouter.routes(), userRouter.allowedMethods());
+  router.use('/task', taskRouter.routes(), taskRouter.allowedMethods());
   return router;
 };
