@@ -61,6 +61,46 @@ function addUpdatedAt(schema, field) {
 }
 
 /**
+ * 向schema对象添加一个软删除的钩子。这个钩子对于`save`、`update`和`findOneAndUpdate`操作有效。
+ * 注意：该钩子对`insertMany`无效。此外添加了`deleted`和`notDeleted`的query helper，并添加了
+ * delete方法。
+ *
+ * @param schema {mongoose.Schema} schema对象
+ * @param field {string} 可选，字段名称，默认为`deleted`
+ */
+function addDeleted(schema, field) {
+  if (!field)
+    field = 'deleted';
+  schema.pre('save', function (next) {
+    if (this.isNew && !this[field])
+      this[field] = false;
+    next();
+  });
+  schema.pre('findOneAndUpdate', function () {
+    const update = this.getUpdate();
+    update['$setOnInsert'] = update['$setOnInsert'] || {};
+    if (!update['$setOnInsert'][field])
+      update['$setOnInsert'][field] = false;
+  });
+  schema.pre('update', function () {
+    const update = this.getUpdate();
+    update['$setOnInsert'] = update['$setOnInsert'] || {};
+    if (!update['$setOnInsert'][field])
+      update['$setOnInsert'][field] = false;
+  });
+  schema.query.deleted = function (deleted) {
+    return this.where(field).eq(true);
+  };
+  schema.query.notDeleted = function () {
+    return this.where(field).ne(true);
+  };
+  schema.methods.delete = function () {
+    this[field] = true;
+    return this.save();
+  };
+}
+
+/**
  * 向schema对象添加一个在文档某些对应于文件的字段发生变化时，自动删除旧文件的钩子。该钩子仅对于
  * `save`和`remove`操作有效。
  *
@@ -105,5 +145,6 @@ function addFileFields(schema, fields, uploadDir) {
 module.exports = {
   addCreatedAt,
   addUpdatedAt,
+  addDeleted,
   addFileFields
 };

@@ -5,7 +5,7 @@
  */
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
-const {addCreatedAt, addUpdatedAt, addFileFields} = require('./hooks');
+const {addCreatedAt, addUpdatedAt, addDeleted, addFileFields} = require('./hooks');
 
 /**
  * 创建`users` model。
@@ -17,12 +17,6 @@ const {addCreatedAt, addUpdatedAt, addFileFields} = require('./hooks');
  */
 module.exports = function (global) {
   const {config, db} = global;
-  // 请确保`DELETED`拥有最大的值，因为我们使用Partial Indexes的小于运算符来筛选未删除的元素
-  const statusEnum = {
-    VALID: 0,
-    BLOCKED: 1,
-    DELETED: 2
-  };
   const roleEnum = {
     SUBSCRIBER: 1 << 0,
     PUBLISHER: 1 << 1,
@@ -44,10 +38,7 @@ module.exports = function (global) {
    *  - `avatarThumbnail64`：字符串，可选，64x64头像文件的位置（自动删除旧文件）
    *  - `createdAt`：创建时间，自动字段
    *  - `updatedAt`：更新时间，自动字段
-   *  - `status`：数字，必要，状态，可通过静态成员`statusEnum`获得所有的状态
-   *    - VALID：可用
-   *    - BLOCKED：用户被封禁
-   *    - DELETED：用户被删除（用户名和邮箱将被开放给新用户注册）
+   *  - `blocked`: 布尔，是否被禁
    *  - `roles`：数字，必要，权限，可通过静态成员`roleEnum`获得所有的权限，可通过位运算组合
    *    - SUBSCRIBER：可以领取活动
    *    - PUBLISHER：可以发布活动
@@ -55,6 +46,7 @@ module.exports = function (global) {
    *    - USER_ADMIN：可以管理用户
    *    - SITE_ADMIN：可以管理网站
    *  - `settings`：用户自定义的设置
+   *  - `deleted`：布尔，是否被删除，索引
    *  @class User
    */
   const userSchema = new mongoose.Schema({
@@ -67,15 +59,16 @@ module.exports = function (global) {
     avatarThumbnail64: {type: String},
     createdAt: {type: Date},
     updatedAt: {type: Date},
-    status: {type: Number, required: true},
+    blocked: {type: Boolean},
     roles: {type: Number},
-    settings: {type: userSettingsSchema}
+    settings: {type: userSettingsSchema},
+    deleted: {type: Boolean, index: true}
   });
 
   userSchema.index({username: 1}, {
     unique: true,
     partialFilterExpression: {
-      status: {$lt: statusEnum.DELETED}
+      deleted: false
     }
   });
   userSchema.index({email: 1}, {
@@ -83,7 +76,7 @@ module.exports = function (global) {
     partialFilterExpression: {
       $and: [
         {email: {$exists: true}},
-        {status: {$lt: statusEnum.DELETED}}
+        {deleted: false}
       ]
     }
   });
@@ -92,17 +85,12 @@ module.exports = function (global) {
     partialFilterExpression: {
       $and: [
         {wechatId: {$exists: true}},
-        {status: {$lt: statusEnum.DELETED}}
+        {deleted: false}
       ]
     }
   });
   userSchema.index({status: 1});
 
-  /**
-   * 用户的状态到编号的映射
-   * @name module:models/users~User.statusEnum
-   */
-  userSchema.statics.statusEnum = statusEnum;
   /**
    * 用户的角色到编号的映射
    * @name module:models/users~User.roleEnum
@@ -111,29 +99,54 @@ module.exports = function (global) {
 
   addCreatedAt(userSchema);
   addUpdatedAt(userSchema);
+  addDeleted(userSchema);
   addFileFields(userSchema, ['avatar', 'avatarThumbnail64'], config['upload-dir']);
-
-  /**
-   * 设置用户的密码
-   * @param password {string} 新密码
-   * @return {Promise.<void>}
-   * @function module:models/users~User#setPassword
-   */
-  userSchema.methods.setPassword = async function (password) {
-    this.password = password ? await bcrypt.hash(password, 10) : null;
-    this.secureUpdatedAt = new Date();
-  };
 
   /**
    * 检查密码正确与否
    * @param password {string} 要检查的密码
-   * @return {Promise.<*>}
+   * @return {Promise.<boolean>} 密码是否正确
    * @function module:models/users~User#checkPassword
    */
   userSchema.methods.checkPassword = async function (password) {
     if (!this.password)
       return false;
     return bcrypt.compare(password, this.password);
+  };
+
+  /**
+   * 按照请求者的权限，转换成对应的对象。
+   * @param auth {object} 可选，权限信息，包含uid和role
+   * 那就是权限。
+   * @return {object} 对象
+   * @function module:models/users~User#toPlainObject
+   */
+  userSchema.methods.toPlainObject = function (auth) {
+    const isSelf = auth && auth.uid === this._id;
+    const isUserAdmin = auth && (auth.role & roleEnum.USER_ADMIN) !== 0;
+    const result = {
+      username: this.username,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      roles: Object.keys(roleEnum).filter(role => this.roles & roleEnum[role])
+    };
+    if (this.avatar !== undefined && this.avatarThumbnail64 !== undefined) {
+      result.avatar = '/uploads/' + this.avatar;
+      result.avatarThumbnail64 = '/uploads/' + this.avatarThumbnail64;
+    }
+    if (this.blocked !== undefined)
+      result.blocked = this.blocked;
+    if (isSelf || isUserAdmin) {
+      if (this.email !== undefined)
+        result.email = this.email;
+      if (this.wechatId !== undefined)
+        result.wechatId = this.wechatId;
+    }
+    if (isSelf) {
+      if (this.settings !== undefined)
+        result.settings = {};
+    }
+    return result;
   };
 
   return db.model('users', userSchema);

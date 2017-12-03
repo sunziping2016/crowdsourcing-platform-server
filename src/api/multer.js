@@ -1,5 +1,5 @@
 /**
- * 专门用于处理`multipart/form-data`请求，对[`express/multer`](https://github.com/expressjs/multer)进行简单的封装
+ * 专门用于处理`multipart/form-data`请求，对[`expressjs/multer`](https://github.com/expressjs/multer)进行简单的封装
  * 这种请求主要用于文件上传。
  *
  * 部分代码借鉴了[`koa-modules/multer`](https://github.com/koa-modules/multer)。
@@ -12,7 +12,8 @@ const {errorsEnum, coreCreateError, coreThrow} = require('../core/errors');
 const {randomAlnumString, promisify} = require('../utils');
 
 /**
- * 初始化一个multer对象。
+ * 初始化一个multer对象。具有`any`、`array`、`fields`、`none`和`single`方法，会返回一个Koa
+ * 中间件，具体使用方法见[`expressjs/multer`](https://github.com/expressjs/multer)。
  *
  * @param options {object} 选项，包含以下内容：
  *   - destination {string} 上传文件路径

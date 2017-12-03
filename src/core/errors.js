@@ -16,6 +16,14 @@ Object.keys(errorsEnum).map(key =>
   }
 );
 
+function coreOkay(data) {
+  if (data === undefined)
+    data = {};
+  else if (typeof data === 'string')
+    data = {message: data};
+  return Object.assign({}, errorsEnum.OK, data);
+}
+
 function coreCreateError(error, data) {
   if (typeof data === 'string')
     data = {message: data};
@@ -44,6 +52,7 @@ function coreAssert(predict, error, data) {
 
 module.exports = {
   errorsEnum,
+  coreOkay,
   coreCreateError,
   coreThrow,
   coreValidate,
