@@ -6,6 +6,7 @@ const errorsEnum = {
   DUPLICATED: 400,
   SCHEMA: 400,
   PARSE: 422,
+  AUTH: 401,
   INTERNAL: 500
 };
 Object.keys(errorsEnum).map(key =>
@@ -15,14 +16,17 @@ Object.keys(errorsEnum).map(key =>
   }
 );
 
-function coreThrow(error, data) {
+function coreCreateError(error, data) {
   if (typeof data === 'string')
     data = {message: data};
   const err = createError(error.code, data.message);
-  data.code = error.code;
   data.type = error.type;
   err.data = data;
-  throw err;
+  return err;
+}
+
+function coreThrow(error, data) {
+  throw coreCreateError(error, data);
 }
 
 function coreValidate(schema, data) {
@@ -40,6 +44,7 @@ function coreAssert(predict, error, data) {
 
 module.exports = {
   errorsEnum,
+  coreCreateError,
   coreThrow,
   coreValidate,
   coreAssert

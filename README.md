@@ -53,7 +53,7 @@
 
 因而整个项目模块之间的依赖如下：
 
-![模块依赖图](https://raw.githubusercontent.com/sunziping2016/crowdsourcing-platform-server/master/docs/module-dependency.svg)
+![模块依赖图](https://cdn.pbrd.co/images/GWdSjZ0.png)
 
 此外还有额外的配置：
 * `.editorconfig`：编辑器配置

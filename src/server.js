@@ -78,7 +78,7 @@ class Server {
     qs(app);
     app.use(koaLogger);
     const router = new Router();
-    const api = Api();
+    const api = Api(global);
     router.use('/api', api.routes(), api.allowedMethods());
     app.use(router.routes());
     app.use(router.allowedMethods());
