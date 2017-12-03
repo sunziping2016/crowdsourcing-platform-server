@@ -1,4 +1,5 @@
 {
+  "name": "云众包",
   "host": "localhost",
   "port": 8000,
   "site": "https://YOUR.DOMAIN",

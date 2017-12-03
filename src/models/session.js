@@ -137,8 +137,8 @@ class RedisSession {
 }
 
 const sessionOptions = {
-  emailSession: {
-    prefix: 'email-sess',
+  createUserSession: {
+    prefix: 'create-user',
     expire: 86400, // 1d
     indices: ['email']
   }
@@ -150,15 +150,10 @@ const sessionOptions = {
  *   - redis {redis.RedisClient} redis客户端
  * @return {object}
  */
-function createSessions(global) {
+module.exports = function (global) {
   const {redis} = global;
   const sessions = {};
   for (let name in sessionOptions)
     sessions[name] = new RedisSession(redis, sessionOptions[name]);
   return sessions;
-}
-
-module.exports = {
-  RedisSession,
-  createSessions
 };

@@ -20,6 +20,7 @@
     }],
     "no-multi-spaces": ["error", {
       "ignoreEOLComments": true
-    }]
+    }],
+    "new-cap": "off"
   }
 }

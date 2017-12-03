@@ -3,27 +3,56 @@
  * @module core/user
  */
 
+const url = require('url');
 const ajv = new (require('ajv'))();
-const {errorsEnum, coreOkay, coreValidate, coreThrow} = require('./errors');
+const bcrypt = require('bcrypt');
+const {errorsEnum, coreOkay, coreValidate, coreThrow, coreAssert} = require('./errors');
+const {emailTemplates} = require('./email');
 
-const createUserSchema = ajv.compile({
+const createUserSchema = [
+  ajv.compile({
+    type: 'object',
+    required: ['username', 'password', 'email', 'roles'],
+    properties: {
+      username: {type: 'string', pattern: '^[a-zA-Z_0-9]+$'},
+      password: {type: 'string', minLength: 8},
+      email: {type: 'string', format: 'email'},
+      roles: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: ['SUBSCRIBER', 'PUBLISHER']
+        },
+        uniqueItems: true
+      }
+    },
+    additionalProperties: false
+  }),
+  ajv.compile({
+    type: 'object',
+    required: ['username', 'password', 'roles'],
+    properties: {
+      username: {type: 'string', pattern: '^[a-zA-Z_0-9]+$'},
+      password: {type: 'string', minLength: 8},
+      email: {type: 'string', format: 'email'},
+      roles: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: ['SUBSCRIBER', 'PUBLISHER', 'TASK_ADMIN',
+            'USER_ADMIN', 'SITE_ADMIN']
+        },
+        uniqueItems: true
+      }
+    },
+    additionalProperties: false
+  })
+];
+const createUserQuerySchema = ajv.compile({
   type: 'object',
-  required: ['username', 'password', 'email', 'role'],
   properties: {
-    username: {type: 'string', pattern: '^[a-zA-Z_0-9]+$'},
-    password: {type: 'string', minLength: 8},
-    email: {type: 'string', format: 'email'},
-    roles: {
-      type: 'array',
-      items: {
-        type: 'string',
-        enum: [
-          'subscriber', 'publisher',
-          'taskAdmin', 'userAdmin', 'siteAdmin'
-        ]},
-      uniqueItems: true,
-      maxItems: 2
-    }
+    populate: {type: 'string', enum: ['false', 'true']},
+    to: {type: 'string'}
   },
   additionalProperties: false
 });
@@ -40,17 +69,25 @@ const createUserSchema = ajv.compile({
  *   - data {object} 请求的data
  *     - username {string} 必须，必须是英文数字下线符，不能为空
  *     - password {string} 必须，长度必须大于8
- *     - email {string} 如果没有`USER_ADMIN`权限，则必须包含该字段，会发送验证邮件，否则不得包含该字段。
- *     - roles {string[]} 如果没有`USER_ADMIN`权限，则只能包含`subscriber`或`publisher`
+ *     - email {string} 如果没有`USER_ADMIN`权限，则必须包含该字段，会发送验证邮件。
+ *       否则为可选字段。格式必须为email的格式
+ *     - roles {string[]} 如果没有`USER_ADMIN`权限，则只能包含`SUBSCRIBER`或`PUBLISHER`
  * @param global {object} 全局数据
  * @return {Promise.<object>} 发送验证邮件的时候，`message`为`Verification email sent`；
  *   成功创建用户的时候，`message`为`User created`，如果不`populate`，`data`为用户的`_id`，
  *   否则为整个用户字段。
  */
 async function createUser(params, global) {
-  const {users, emailSession} = global;
-  coreValidate(createUserSchema, params.data);
-  const query = {status: {$ne: users.statusEnum.DELETED}};
+  const {config, users, email, createUserSession} = global;
+  const isUserAdmin = params.auth && (params.auth.role &
+    users.roleEnum.USER_ADMIN) !== 0;
+  coreValidate(createUserQuerySchema, params.query);
+  coreValidate(createUserSchema[isUserAdmin ? 1 : 0], params.data);
+  if (!isUserAdmin) {
+    params.query.to = new url.URL(params.query.to || '/', config.site);
+    coreAssert(params.query.to.origin === config.site, errorsEnum.SCHEMA, 'Cross site redirection');
+  }
+  const query = {};
   if (params.data.email)
     query.$or = [
       {username: params.data.username},
@@ -58,21 +95,41 @@ async function createUser(params, global) {
     ];
   else
     query.username = params.data.username;
-  const duplicatedUser = await users.findOne(query);
+  const duplicatedUser = await users.findOne(query).notDeleted();
   if (duplicatedUser !== null) {
     if (duplicatedUser.username === params.data.username)
-      coreThrow(errorsEnum.DUPLICATED, {
+      coreThrow(errorsEnum.INVALID, {
         message: 'Username has been taken'
       });
     else
-      coreThrow(errorsEnum.DUPLICATED, {
+      coreThrow(errorsEnum.INVALID, {
         message: 'Email has been taken'
       });
   }
-  await emailSession.removeByIndex({email: params.data.email});
-  // const sid = await emailSession.save(params.data);
-
-  return coreOkay('Verification email sent');
+  params.data.password = await bcrypt.hash(params.data.password, 10);
+  let role = 0;
+  params.data.roles.forEach(x => role |= users.roleEnum[x]);
+  params.data.roles = role;
+  if (isUserAdmin) {
+    const user = new users(params.data);
+    await user.save();
+    return coreOkay({
+      message: 'User created',
+      data: params.query.populate ? user.toPlainObject(params.auth) : user._id
+    });
+  } else {
+    await createUserSession.removeByIndex({email: params.data.email});
+    const token = await createUserSession.save(params.data);
+    const to = params.query.to;
+    to.searchParams.set('token', token);
+    to.searchParams.set('action', 'create-user');
+    const template = Object.assign({}, emailTemplates.createUser(to.href), {
+      from: `"${config.name}" <${config.email.auth.user}>`,
+      to: params.data.email
+    });
+    await email.sendMail(template);
+    return coreOkay('Verification email sent');
+  }
 }
 
 /**

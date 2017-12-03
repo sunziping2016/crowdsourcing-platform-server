@@ -98,6 +98,7 @@ class Server {
    */
   static normalizeConfig(config) {
     const defaultConfig = {
+      name: 'Crowd Sourcing',
       host: 'localhost',
       db: 'mongodb://localhost/crowdsource',
       redis: 'redis://localhost/',

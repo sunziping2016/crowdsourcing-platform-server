@@ -3,18 +3,8 @@
  * @module core/email
  */
 
-/**
- * 确认邮件链接，并执行对应的操作。
- * @param params
- * @param global
- * @return {Promise<void>}
- */
-async function postEmail(params, global) {
-
-}
-
 const emailTemplates = {
-  'create-user': function (url) {
+  createUser(url) {
     return {
       subject: '请确认您的账号',
       text: `点击或在浏览器中打开以下链接以激活您的账号：\n${url}`,
@@ -22,7 +12,7 @@ const emailTemplates = {
              <p><a href="${url}">${url}</a></p>`
     };
   },
-  'reset-password': function (url) {
+  resetPassword(url) {
     return {
       subject: '请重置您的密码',
       text: `点击或在浏览器中打开以下链接以重置您账号的密码：\n${url}`,
@@ -32,7 +22,18 @@ const emailTemplates = {
   }
 };
 
+/**
+ * 确认邮件链接，并执行对应的操作。
+ * @param params
+ *
+ * @param global
+ * @return {Promise<void>}
+ */
+async function postEmail(params, global) {
+
+}
+
 module.exports = {
-  postEmail,
-  emailTemplates
+  emailTemplates,
+  postEmail
 };

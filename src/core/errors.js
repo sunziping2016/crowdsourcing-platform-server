@@ -3,7 +3,7 @@ const createError = require('http-errors');
 
 const errorsEnum = {
   OK: 200,
-  DUPLICATED: 400,
+  INVALID: 400,
   SCHEMA: 400,
   PARSE: 422,
   AUTH: 401,
