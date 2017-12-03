@@ -25,6 +25,7 @@ const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const {errorsEnum, coreThrow} = require('../core/errors');
 const UserRouter = require('./user');
+const TaskRouter = require('./task');
 
 async function errorHandler(ctx, next) {
   try {
@@ -64,6 +65,7 @@ function cleanFiles(files) {
 module.exports = function (global) {
   const router = new Router();
   const userRouter = new UserRouter(global);
+  const taskRouter = new TaskRouter();
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => coreThrow(errorsEnum.PARSE, 'Cannot parse body')
@@ -101,5 +103,6 @@ module.exports = function (global) {
     }
   });
   router.use('/user', userRouter.routes(), userRouter.allowedMethods());
+  router.use('/task', taskRouter.routes(), taskRouter.allowedMethods());
   return router;
 };
