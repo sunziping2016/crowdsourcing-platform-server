@@ -7,6 +7,7 @@ const errorsEnum = {
   SCHEMA: 400,
   PARSE: 422,
   AUTH: 401,
+  PERMISSION: 400,
   INTERNAL: 500
 };
 Object.keys(errorsEnum).map(key =>

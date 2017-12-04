@@ -71,7 +71,7 @@ class RedisSession {
         });
         command.zadd(setName, 'NX', expire, sid);
         if (typeof this.expire === 'number')
-          command.pexpire(setName, this.expire);
+          command.expire(setName, this.expire);
       });
     await command.execAsync();
     return sid;

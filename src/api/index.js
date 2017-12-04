@@ -25,6 +25,7 @@ const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const {errorsEnum, coreThrow} = require('../core/errors');
 const UserRouter = require('./user');
+const EmailRouter = require('./email');
 const TaskRouter = require('./task');
 
 async function errorHandler(ctx, next) {
@@ -65,6 +66,7 @@ function cleanFiles(files) {
 module.exports = function (global) {
   const router = new Router();
   const userRouter = new UserRouter(global);
+  const emailRouter = new EmailRouter();
   const taskRouter = new TaskRouter();
   router.use(errorHandler);
   router.use(bodyParser({
@@ -103,6 +105,7 @@ module.exports = function (global) {
     }
   });
   router.use('/user', userRouter.routes(), userRouter.allowedMethods());
+  router.use('/email', emailRouter.routes(), emailRouter.allowedMethods());
   router.use('/task', taskRouter.routes(), taskRouter.allowedMethods());
   return router;
 };
