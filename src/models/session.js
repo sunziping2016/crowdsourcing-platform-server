@@ -141,6 +141,11 @@ const sessionOptions = {
     prefix: 'create-user',
     expire: 86400, // 1d
     indices: ['email']
+  },
+  resetPasswordSession: {
+    prefix: 'reset-pwd',
+    expire: 86400, // 1d
+    indices: ['email']
   }
 };
 

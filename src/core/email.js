@@ -6,24 +6,27 @@ const url = require('url');
 const ajv = new (require('ajv'))();
 const bcrypt = require('bcrypt');
 const {errorsEnum, coreOkay, coreValidate, coreThrow, coreAssert} = require('./errors');
+const {escapeHtml} = require('../utils');
 
 const sidRegex = /^[a-zA-Z_0-9]{40}$/;
 
 const emailTemplates = {
   createUser(url) {
+    const escapedUrl = escapeHtml(url);
     return {
       subject: '请确认您的账号',
       text: `点击或在浏览器中打开以下链接以激活您的账号：\n${url}`,
-      html: `<p>点击<a href="${url}">此处</a>或在浏览器中打开以下链接以激活您的账号：</p>
-             <p><a href="${url}">${url}</a></p>`
+      html: `<p>点击<a href="${escapedUrl}">此处</a>或在浏览器中打开以下链接以激活您的账号：</p>
+             <p><a href="${escapedUrl}">${escapedUrl}</a></p>`
     };
   },
   resetPassword(url) {
+    const escapedUrl = escapeHtml(url);
     return {
       subject: '请重置您的密码',
       text: `点击或在浏览器中打开以下链接以重置您账号的密码：\n${url}`,
-      html: `<p>点击<a href="${url}">此处</a>或在浏览器中打开以下链接以重置您账号的密码：</p>
-             <p><a href="${url}">${url}</a></p>`
+      html: `<p>点击<a href="${escapedUrl}">此处</a>或在浏览器中打开以下链接以重置您账号的密码：</p>
+             <p><a href="${escapedUrl}">${escapedUrl}</a></p>`
     };
   }
 };
@@ -65,7 +68,7 @@ const sendEmailSchema = ajv.compile({
  * @return {Promise<object>}
  */
 async function sendEmail(params, global) {
-  const {config, users, email, createUserSession} = global;
+  const {config, users, email} = global;
   coreValidate(sendEmailSchema, params.data);
   const to = new url.URL(params.data.to || '/', config.site);
   coreAssert(to.origin === config.site, errorsEnum.SCHEMA, 'Cross site redirection');
@@ -77,6 +80,7 @@ async function sendEmail(params, global) {
   coreAssert(isCreateUser === (params.data.roles !== undefined),
     errorsEnum.SCHEMA, 'Invalid roles field');
   if (isCreateUser) {
+    const {createUserSession} = global;
     const duplicatedUser = await users.findOne({
       $or: [
         {username: params.data.username},
@@ -103,7 +107,22 @@ async function sendEmail(params, global) {
     await email.sendMail(template);
     return coreOkay();
   } else {
-    // TODO: reset password email
+    const {resetPasswordSession} = global;
+    const user = await users.findOne({email: params.data.email}).notDeleted();
+    coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+    await resetPasswordSession.removeByIndex({email: params.data.email});
+    const token = await resetPasswordSession.save({
+      email: params.data.email,
+      id: user._id.toString()
+    });
+    to.searchParams.set('token', token);
+    to.searchParams.set('action', 'reset-password');
+    const template = Object.assign({}, emailTemplates.resetPassword(to.href), {
+      from: `"${config.name}" <${config.email.auth.user}>`,
+      to: params.data.email
+    });
+    await email.sendMail(template);
+    return coreOkay();
   }
 }
 
@@ -130,12 +149,13 @@ const confirmEmailSchema = ajv.compile({
  * @return {Promise<object>}
  */
 async function confirmEmail(params, global) {
-  const {users, createUserSession} = global;
+  const {users} = global;
   coreValidate(confirmEmailSchema, params.data);
   coreAssert((params.data.action === 'create-user') === (params.data.password === undefined),
     errorsEnum.SCHEMA, 'Invalid password field');
   coreAssert(params.id && sidRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid token field');
   if (params.data.action === 'create-user') {
+    const {createUserSession} = global;
     const data = await createUserSession.loadAndRemove(params.id);
     coreAssert(data, errorsEnum.INVALID, 'Invalid token');
     data.role = parseInt(data.role);
@@ -154,7 +174,15 @@ async function confirmEmail(params, global) {
     await user.save();
     return coreOkay();
   } else {
-    // TODO: reset password
+    const {resetPasswordSession, jwt} = global;
+    const data = await resetPasswordSession.loadAndRemove(params.id);
+    coreAssert(data, errorsEnum.INVALID, 'Invalid token');
+    const user = await users.findById(data.id).notDeleted();
+    coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+    user.password = await bcrypt.hash(params.data.password, 10);
+    await jwt.revoke(data.id);
+    await user.save();
+    return coreOkay();
   }
 }
 

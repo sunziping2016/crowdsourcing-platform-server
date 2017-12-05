@@ -7,7 +7,10 @@ module.exports = function (global) {
   const avtarMulter = multer({
     destination: global.config['upload-dir'],
     types: ['image/png', 'image/gif', 'image/jpeg'],
-    maxSize: 5 * 1024 * 1024
+    maxSize: 5 * 1024 * 1024,
+    fields: {
+      blocked: x => x === 'true'
+    }
   }).single('avatar');
   const router = new Router();
   router.post('/', coreToMiddleware(coreUser.createUser));

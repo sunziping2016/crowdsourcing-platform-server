@@ -92,9 +92,7 @@ module.exports = function (global) {
         ctx.params.auth = await ctx.global.jwt.verify(token);
       } catch (err) {
         ctx.set('WWW-Authenticate', 'Bearer');
-        coreThrow(errorsEnum.AUTH, {
-          message: err.message
-        });
+        coreThrow(errorsEnum.AUTH, err.message);
       }
     }
     try {

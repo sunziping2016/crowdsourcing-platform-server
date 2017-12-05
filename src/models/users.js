@@ -122,7 +122,7 @@ module.exports = function (global) {
    * @function module:models/users~User#toPlainObject
    */
   userSchema.methods.toPlainObject = function (auth) {
-    const isSelf = auth && auth.uid === this._id;
+    const isSelf = auth && this._id.equals(auth.uid);
     const isUserAdmin = auth && (auth.role & roleEnum.USER_ADMIN) !== 0;
     const result = {
       username: this.username,

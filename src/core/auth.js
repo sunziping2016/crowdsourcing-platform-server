@@ -4,7 +4,7 @@
  */
 
 const ajv = new (require('ajv'))();
-const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('./errors');
+const {errorsEnum, coreOkay, coreValidate, coreThrow, coreAssert} = require('./errors');
 
 const authenticateSchema = {
   basic: ajv.compile({
@@ -62,13 +62,26 @@ async function authenticate(params, global) {
   coreValidate(authenticateSchema[params.data.strategy], params.data.payload);
   if (params.data.strategy === 'jwt') {
     // TODO: JWT
+    let data;
+    try {
+      data = await jwt.verify(params.data.payload.jwt);
+    } catch (err) {
+      coreThrow(errorsEnum.INVALID, err.message);
+    }
+    await jwt.revoke(data.uid, data.jti);
+    const user = await users.findById(data.uid).notDeleted();
+    coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+    const token = await jwt.sign({uid: data.uid, role: user.roles}, {
+      expiresIn: '10d'
+    });
+    return coreOkay({data: token});
   } else {
     const password = params.data.payload.password;
     delete params.data.payload.password;
     const user = await users.findOne(params.data.payload).notDeleted();
     coreAssert(user, errorsEnum.INVALID, 'User does not exist');
     coreAssert(await user.checkPassword(password), errorsEnum.INVALID, 'Invalid password');
-    const token = await jwt.sign({uid: user._id, role: user.roles}, {
+    const token = await jwt.sign({uid: user._id.toString(), role: user.roles}, {
       expiresIn: '10d'
     });
     return coreOkay({data: token});
