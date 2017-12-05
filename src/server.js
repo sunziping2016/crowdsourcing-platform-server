@@ -11,9 +11,21 @@ const Sio = require('socket.io');
 const SioRedis = require('socket.io-redis');
 const mailer = require('nodemailer');
 const qs = require('koa-qs');
+const Router = require('koa-router');
+const koaLogger = require('./koa-logger');
 const Models = require('./models');
+const Api = require('./api');
+const {promisify} = require('./utils');
+const redisCommands = require('redis-commands');
 
 mongoose.Promise = Promise;
+
+redisCommands.list.forEach(key =>
+  Redis.RedisClient.prototype[key + 'Async'] = promisify(Redis.RedisClient.prototype[key])
+);
+['exec', 'exec_atomic'].forEach(key =>
+  Redis.Multi.prototype[key + 'Async'] = promisify(Redis.Multi.prototype[key])
+);
 
 /**
  * 整个服务端类。这里初始化了整个项目传递各种对象的`global`对象。
@@ -36,7 +48,9 @@ class Server {
    */
   async start(config) {
     /* ==== 初始化上下文环境 ==== */
+    config = Server.normalizeConfig(config || {});
     const app = this.app = new Koa();
+    app.proxy = true;
     const db = await mongoose.createConnection(config.db,
       {useMongoClient: true});
     const redis = Redis.createClient(config.redis);
@@ -47,29 +61,53 @@ class Server {
       pubClient: redis,
       subClient: sioRedis
     }));
-    const email = mailer.createTransport(config.email);
     const global = {
       config,              // 配置选项
       db,                  // MongoDB数据库的连接
       redis,               // Redis数据库的连接
       sioRedis,            // Redis数据库的连接，专门用于Socket.IO的监听事件
       server,              // HTTP server实例
-      sio,                 // Socket.IO服务端
-      email                // E-mail邮件传输
+      sio                  // Socket.IO服务端
     };
+    if (config.email)
+      global.email = mailer.createTransport(config.email); // E-mail邮件传输
     const models = await Models(global);
     Object.assign(global, models); // 各种Models
     app.context.global = global;
     /* ==== 设置路由 ==== */
     qs(app);
+    app.use(koaLogger);
+    const router = new Router();
+    const api = Api(global);
+    router.use('/api', api.routes(), api.allowedMethods());
+    app.use(router.routes());
+    app.use(router.allowedMethods());
+    if (config.port !== undefined)
+      await new Promise((resolve, reject) =>
+        server
+          .listen(config.port, config.host, resolve)
+          .once('error', reject)
+      );
+  }
 
-    app.use(async ctx => ctx.body = 'hello, world!');
-
-    await new Promise((resolve, reject) =>
-      server
-        .listen(config.port, config.host, resolve)
-        .once('error', reject)
-    );
+  /**
+   * 将默认的项目配置与config对象合并后返回。
+   *
+   * @param config {object} 项目配置
+   * @return {object} 添加了默认配置的项目配置
+   */
+  static normalizeConfig(config) {
+    const defaultConfig = {
+      name: 'Crowd Sourcing',
+      host: 'localhost',
+      db: 'mongodb://localhost/crowdsource',
+      redis: 'redis://localhost/',
+      'upload-dir': 'uploads'
+    };
+    Object.assign(defaultConfig, config);
+    if (defaultConfig.site === undefined)
+      defaultConfig.site = `http://${defaultConfig.host}:${defaultConfig.port}`;
+    return defaultConfig;
   }
 
   /**

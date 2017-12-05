@@ -1,4 +1,5 @@
 {
+  "name": "云众包",
   "host": "localhost",
   "port": 8000,
   "site": "https://YOUR.DOMAIN",
@@ -19,6 +20,7 @@
       "pass": "EMAIL_PASSWORD"
     }
   },
+  "upload-dir": "uploads",
   "cluster": false,
   "log-level": "info"
 }
