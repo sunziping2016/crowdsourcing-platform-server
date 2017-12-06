@@ -125,6 +125,7 @@ module.exports = function (global) {
     const isSelf = auth && this._id.equals(auth.uid);
     const isUserAdmin = auth && (auth.role & roleEnum.USER_ADMIN) !== 0;
     const result = {
+      _id: this._id.toString(),
       username: this.username,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

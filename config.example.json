@@ -22,5 +22,6 @@
   },
   "upload-dir": "uploads",
   "cluster": false,
-  "log-level": "info"
+  "log-level": "info",
+  "static": true
 }

@@ -61,7 +61,6 @@ async function authenticate(params, global) {
   coreValidate(authenticateSchema.basic, params.data);
   coreValidate(authenticateSchema[params.data.strategy], params.data.payload);
   if (params.data.strategy === 'jwt') {
-    // TODO: JWT
     let data;
     try {
       data = await jwt.verify(params.data.payload.jwt);
@@ -80,7 +79,7 @@ async function authenticate(params, global) {
     delete params.data.payload.password;
     const user = await users.findOne(params.data.payload).notDeleted();
     coreAssert(user, errorsEnum.INVALID, 'User does not exist');
-    coreAssert(await user.checkPassword(password), errorsEnum.INVALID, 'Invalid password');
+    coreAssert(await user.checkPassword(password), errorsEnum.INVALID, 'Wrong password');
     const token = await jwt.sign({uid: user._id.toString(), role: user.roles}, {
       expiresIn: '10d'
     });
