@@ -1,13 +1,16 @@
 const path = require('path');
 const assert = require('assert');
 const logger = require('winston');
+const bcrypt = require('bcrypt');
 const server = new (require('../src/server'))();
 const Redis = require('redis');
+const mongoose = require('mongoose');
 
 const config = require(process.env.CROWDSOURCE_CONFIG_FILE
   ? path.join(__dirname, '..', process.env.CROWDSOURCE_CONFIG_FILE)
   : '../config.test.json');
 
+mongoose.Promise = Promise;
 logger.level = 'error';
 
 async function startServer() {
@@ -21,20 +24,30 @@ function stopServer() {
 
 async function clearRedis() {
   const redis = Redis.createClient(config.redis);
-  await new Promise((resolve, reject) => {
-    redis.del('*', (err, res) => {
-      if (err)
-        reject(err);
-      else
-        resolve(res);
-    });
-  });
+  await redis.flushallAsync();
   redis.quit();
+}
+
+async function clearDBs() {
+  const db = await mongoose.createConnection(config.db, {useMongoClient: true});
+  await Promise.all(
+    (await db.db.listCollections().toArray())
+      .map(x => db.db.dropCollection(x.name))
+  );
+  await db.close();
 }
 
 async function createJwts(jwts) {
   return Promise.all(jwts.map(x =>
     server.app.context.global.jwt.sign(x.payload, x.options)
+  ));
+}
+
+async function createUsers(users) {
+  return Promise.all(users.map(x =>
+    bcrypt.hash(x.password, 10).then(password =>
+      (new server.app.context.global.users(Object.assign({}, x, {password}))).save()
+    )
   ));
 }
 
@@ -62,7 +75,9 @@ module.exports = {
   startServer,
   stopServer,
   clearRedis,
+  clearDBs,
   createJwts,
+  createUsers,
   // async helpers
   setTimeoutAsync,
   assertThrowsAsync
