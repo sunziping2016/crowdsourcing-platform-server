@@ -138,8 +138,8 @@ describe('Auth API test', () => {
       assert.strictEqual(data.uid, userData[0]._id);
       assert.strictEqual(data.role, userData[0].roles);
       const anotherData = await jwt.verify(jwtData[1]);
-      assert.strictEqual(anotherData .uid, userData[0]._id);
-      assert.strictEqual(anotherData .role, userData[0].roles);
+      assert.strictEqual(anotherData.uid, userData[0]._id);
+      assert.strictEqual(anotherData.role, userData[0].roles);
     });
   });
 });
