@@ -91,7 +91,9 @@ async function getUser(params, global) {
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const user = await users.findById(params.id).notDeleted();
   coreAssert(user, errorsEnum.INVALID, 'User does not exist');
-  return coreOkay(user.toPlainObject(params.auth));
+  return coreOkay({
+    data: user.toPlainObject(params.auth)
+  });
 }
 
 const patchUserSchema = ajv.compile({

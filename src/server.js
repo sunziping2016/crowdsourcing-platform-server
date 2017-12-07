@@ -12,6 +12,8 @@ const SioRedis = require('socket.io-redis');
 const mailer = require('nodemailer');
 const qs = require('koa-qs');
 const Router = require('koa-router');
+const serve = require('koa-static');
+const mount = require('koa-mount');
 const koaLogger = require('./koa-logger');
 const Models = require('./models');
 const Api = require('./api');
@@ -82,6 +84,10 @@ class Server {
     router.use('/api', api.routes(), api.allowedMethods());
     app.use(router.routes());
     app.use(router.allowedMethods());
+    if (config.static) {
+      app.use(mount('/uploads', serve('uploads')));
+      app.use(serve('public'));
+    }
     if (config.port !== undefined)
       await new Promise((resolve, reject) =>
         server
@@ -102,7 +108,8 @@ class Server {
       host: 'localhost',
       db: 'mongodb://localhost/crowdsource',
       redis: 'redis://localhost/',
-      'upload-dir': 'uploads'
+      'upload-dir': 'uploads',
+      'static': false
     };
     Object.assign(defaultConfig, config);
     if (defaultConfig.site === undefined)
