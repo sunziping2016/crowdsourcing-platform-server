@@ -109,6 +109,7 @@ class Server {
       db: 'mongodb://localhost/crowdsource',
       redis: 'redis://localhost/',
       'upload-dir': 'uploads',
+      'temp-dir': 'temp',
       'static': false
     };
     Object.assign(defaultConfig, config);

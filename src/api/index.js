@@ -69,7 +69,7 @@ module.exports = function (global) {
   const userRouter = new UserRouter(global);
   const emailRouter = new EmailRouter();
   const authRouter = new AuthRouter();
-  const taskRouter = new TaskRouter();
+  const taskRouter = new TaskRouter(global);
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => coreThrow(errorsEnum.PARSE, 'Cannot parse body')

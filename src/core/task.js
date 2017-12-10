@@ -4,7 +4,9 @@
  */
 
 const ajv = new (require('ajv'))();
+const taskTypes = require('./task-types');
 const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('./errors');
+const {makeThumbnail} = require('./utils');
 
 const idRegex = /^[a-f\d]{24}$/i;
 
@@ -16,64 +18,76 @@ const querySchema = ajv.compile({
   additionalProperties: false
 });
 
-const createTaskSchema = [
-  ajv.compile({
-    type: 'object',
-    required: ['name', 'publisher', 'description', 'moneyLeft', 'spentMoney', 'taskType'],
-    properties: {
-      name: {type: 'string'},
-      description: {type: 'string'},
-      expiredAt: {type: 'date'},
-      moneyLeft: {type: 'number'},
-      moneySpent: {type: 'number'},
-      taskType: {type: 'number'},
-      tags: {
-        type: 'array',
-        items: {
-          type: 'string'
-        }
-      }
-    },
-    additionalProperties: false
-  })
-];
+const createTaskSchema = ajv.compile({
+  type: 'object',
+  required: ['name', 'description', 'excerption', 'type'],
+  properties: {
+    name: {type: 'string'},
+    description: {type: 'string'},
+    excerption: {type: 'string', maxLength: 140},
+    deadline: {type: 'string', format: 'date-time'},
+    type: {type: 'string', enum: Object.keys(taskTypes)},
+    tags: {
+      type: 'array',
+      items: {
+        type: 'string'
+      },
+      maxItems: 5
+    }
+  },
+  additionalProperties: false
+});
 
 /**
- * 创建任务。
+ * 创建任务。需要具有`PUBLISHER`权限`
  *   ajax: POST /api/task/:id
  *   socket.io: emit task:create
  * @param params {object}
  *  - auth {object} 权限
  *  - query {object} 请求query
  *    - populate {boolean} 可选，默认false,返回task id
+ *  - files {object} 上传的图片，额外的数据请通过`PATCH`上传
+ *    - picture {object} 上传的图片
  *  - data {object} 访问的数据
  *    - name {string} 必须，任务标题
- *    - description {string} 必须，任务描述
- *    - moneyLeft {number} 必须，剩余金额
- *    - moneySpent {number} 必须，已花金额
- *    - taskType {number} 必须，任物类型
- *    - expiredAt {date} 可选，失效日期
- *    - tags {string[]} 可选，标签
+ *    - description {string} 必须，任务描述，Markdown
+ *    - excerption {string} 必须，任务摘要，无Markdown，最长只能有140字
+ *    - tags {string[]} 可选，标签，最多只有5个
+ *    - type {string} 必须，任物类型
+ *    - deadline {string} 可选，失效日期
  * @param global {object}
  *  - tasks {object} Tasks model
  * @return {Promise.<object>} 如果不`populate`，`data`为任务的`_id`，否则为整个任务字段。
  */
 
 async function createTask(params, global) {
-  const {tasks, users} = global;
+  const {tasks, users, config} = global;
   coreAssert(params.auth && (params.auth.role & users.roleEnum.PUBLISHER),
     errorsEnum.PERMISSION, 'Requires publisher privilege');
   coreValidate(querySchema, params.query);
   coreValidate(createTaskSchema, params.data);
+  if (params.data.deadline !== undefined)
+    params.data.deadline = new Date(params.data.deadline);
   const task = await new tasks(
-    Object.assign({},
-      params.data,
-      {status: tasks.statics.statusEnum.TO_BE_SUBMITTED, publisher: params.auth.uid})
+    Object.assign({}, params.data, {
+      valid: false,
+      status: tasks.statusEnum.EDITING,
+      publisher: params.auth.uid
+    })
   );
+  if (params.file) {
+    const thumbnail = await makeThumbnail(params.file.path, {
+      size: [487, 365],
+      destination: config['upload-dir']
+    });
+    params._files.push(thumbnail.path);
+    task.picture = params.file.filename;
+    task.pictureThumbnail = thumbnail.filename;
+  }
+  await taskTypes[params.data.type].createHook(task, params, global);
   await task.save();
   return coreOkay({
-    data: params.query.populate === 'true'
-      ? task : task._id
+    data: params.query.populate === 'true' ? task.toPlainObject(params.auth) : task._id
   });
 }
 
@@ -103,10 +117,6 @@ const patchTaskSchema = [
     properties: {
       name: {type: 'string'},
       description: {type: 'string'},
-      expiredAt: {type: 'date'},
-      submittedAt: {type: 'date'},
-      publishedAt: {type: 'date'},
-      completedAt: {type: 'date'},
       moneyLeft: {type: 'number'},
       moneySpent: {type: 'number'},
       taskType: {type: 'number'},
