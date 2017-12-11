@@ -90,7 +90,7 @@ async function getUser(params, global) {
   const {users} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const user = await users.findById(params.id).notDeleted();
-  coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+  coreAssert(user, errorsEnum.EXIST, 'User does not exist');
   return coreOkay({
     data: user.toPlainObject(params.auth)
   });
@@ -150,7 +150,7 @@ async function patchUser(params, global) {
   coreAssert((params.data.blocked === undefined && params.data.roles === undefined) ||
     isUserAdmin, errorsEnum.PERMISSION, 'Requires user admin privilege');
   const user = await users.findById(params.id).notDeleted();
-  coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+  coreAssert(user, errorsEnum.EXIST, 'User does not exist');
   let refreshJWT = false;
   if (params.data.password !== undefined) {
     user.password = await bcrypt.hash(params.data.password, 10);
@@ -204,7 +204,7 @@ async function deleteUser(params, global) {
   coreAssert(params.auth && (params.auth.role & users.roleEnum.USER_ADMIN),
     errorsEnum.PERMISSION, 'Requires user admin privilege');
   const user = await users.findById(params.id).notDeleted();
-  coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+  coreAssert(user, errorsEnum.EXIST, 'User does not exist');
   await jwt.revoke(params.id);
   await user.delete();
   return coreOkay();

@@ -13,13 +13,13 @@
 	* [2.1 数据表](#21-数据表)
 		* [2.1.1 `users`表](#211-users表)
 		* [2.1.2 `tasks`表](#212-tasks表)
-		* [2.1.3 牙片任务](#213-牙片任务)
-			* [2.1.3.1 `tests`表](#2131-tests表)
-			* [2.1.3.2 `testDistribution`表](#2132-testdistribution表)
-			* [2.1.3.3 `assignments`表](#2133-assignments表)
-			* [2.1.3.4 `distribution`表](#2134-distribution表)
+		* [2.1.3 `assignments`表](#213-assignments表)
 	* [2.2 接口设计](#22-接口设计)
-		* [2.2.1 `users`接口设计](#221-users接口设计)
+		* [2.1.1 用户模块](#211-用户模块)
+		* [2.1.2 邮箱模块](#212-邮箱模块)
+		* [2.1.3 认证模块](#213-认证模块)
+		* [2.1.4 任务模块](#214-任务模块)
+		* [2.1.5 作业模块](#215-作业模块)
 
 <!-- /code_chunk_output -->
 
@@ -109,7 +109,7 @@ npm run gh-pages
 
 见[models/assignments~Assignment](https://sunziping2016.github.io/crowdsourcing-platform-server/0.1.0/module-models_assignments-Assignment.html)。
 
-### 2.2 接口设计
+## 2.2 接口设计
 借口主要以两种方式接入：
 1. AJAX请求：见[api](https://sunziping2016.github.io/crowdsourcing-platform-server/0.1.0/module-api.html)
 2. Socket.IO事件：见[socket](https://sunziping2016.github.io/crowdsourcing-platform-server/0.1.0/module-socket.html)

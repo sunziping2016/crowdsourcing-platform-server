@@ -1,5 +1,5 @@
 /**
- * 任务models，存储了任务的信息。
+ * 任务model，存储了任务的信息。
  *
  * @module models/tasks
  */
@@ -79,6 +79,13 @@ module.exports = function (global) {
   addDeleted(taskSchema);
   addFileFields(taskSchema, ['picture', 'pictureThumbnail'], config['upload-dir']);
 
+  /**
+   * 按照请求者的权限，转换成对应的对象。
+   * @param auth {object} 可选，权限信息，包含uid和role
+   * 那就是权限。
+   * @return {object} 对象
+   * @function module:models/tasks~Task#toPlainObject
+   */
   taskSchema.methods.toPlainObject = function (auth) {
     return taskTypes[this.type].taskToPlainObject(this, auth);
   };
