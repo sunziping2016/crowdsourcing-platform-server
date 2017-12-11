@@ -20,7 +20,7 @@ const querySchema = ajv.compile({
 
 const createTaskSchema = ajv.compile({
   type: 'object',
-  required: ['name', 'description', 'excerption', 'type'],
+  required: ['name', 'description', 'excerption'],
   properties: {
     name: {type: 'string'},
     description: {type: 'string'},
@@ -40,8 +40,8 @@ const createTaskSchema = ajv.compile({
 
 /**
  * 创建任务。需要具有`PUBLISHER`权限`
- *   ajax: POST /api/task/:id
- *   socket.io: emit task:create
+ *  - ajax: POST /api/task/:id
+ *  - socket.io: emit task:create
  * @param params {object}
  *  - auth {object} 权限
  *  - query {object} 请求query
@@ -53,7 +53,7 @@ const createTaskSchema = ajv.compile({
  *    - description {string} 必须，任务描述，Markdown
  *    - excerption {string} 必须，任务摘要，无Markdown，最长只能有140字
  *    - tags {string[]} 可选，标签，最多只有5个
- *    - type {string} 必须，任物类型
+ *    - type {string} 任务类型，如果创建的时候指定了就不能够再次更改
  *    - deadline {string} 可选，失效日期
  * @param global {object}
  *  - tasks {object} Tasks model
@@ -84,7 +84,6 @@ async function createTask(params, global) {
     task.picture = params.file.filename;
     task.pictureThumbnail = thumbnail.filename;
   }
-  await taskTypes[params.data.type].createHook(task, params, global);
   await task.save();
   return coreOkay({
     data: params.query.populate === 'true' ? task.toPlainObject(params.auth) : task._id
@@ -92,9 +91,9 @@ async function createTask(params, global) {
 }
 
 /**
- * 獲取任务詳情。
- *   ajax: GET /api/task/:id
- *   socket.io: emit task:get
+ * 获取任务详情。如果任务处于未发布状态，只有任务本身的发布者或者任务管理员可以有权限获取。
+ *  - ajax: GET /api/task/:id
+ *  - socket.io: emit task:get
  * @param params {object}
  *  - auth {object} 权限
  *  - id {string} 要获取详情的任务的id
@@ -104,38 +103,42 @@ async function createTask(params, global) {
  */
 
 async function getTask(params, global) {
-  const {tasks} = global;
+  const {tasks, users} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const task = await tasks.findById(params.id).notDeleted();
+  coreAssert(
+    task.status === tasks.statusEnum.PUBLISHED ||
+      (params.auth && (task.publisher.equals(params.auth.uid) ||
+      params.auth.role & users.roleEnum.TASK_ADMIN)),
+    errorsEnum.PERMISSION, 'Permission denied'
+  );
   coreAssert(task, errorsEnum.INVALID, 'Task not found.');
-  return coreOkay(task);
+  return coreOkay(task.toPlainObject(params.auth));
 }
 
-const patchTaskSchema = [
-  ajv.compile({
-    type: 'object',
-    properties: {
-      name: {type: 'string'},
-      description: {type: 'string'},
-      moneyLeft: {type: 'number'},
-      moneySpent: {type: 'number'},
-      taskType: {type: 'number'},
-      tags: {
-        type: 'array',
-        items: {
-          type: 'string'
-        }
+const patchTaskSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    name: {type: 'string'},
+    description: {type: 'string'},
+    excerption: {type: 'string', maxLength: 140},
+    deadline: {type: 'string', format: 'date-time'},
+    type: {type: 'string', enum: Object.keys(taskTypes)},
+    tags: {
+      type: 'array',
+      items: {
+        type: 'string'
       },
-      status: {type: 'number'}
-    },
-    additionalProperties: false
-  })
-];
+      maxItems: 5
+    }
+  },
+  additionalProperties: false
+});
 
 /**
- * 修改任务詳情。
- *   ajax: PATCH /api/task/:id
- *   socket.io: emit task:patch
+ * 修改任务详情。
+ *  - ajax: PATCH /api/task/:id
+ *  - socket.io: emit task:patch
  * @param params {object}
  *  - id {string} 要修改的任务的id
  *  - query {object}
@@ -143,14 +146,8 @@ const patchTaskSchema = [
  *  - data {object} 修改的数据，必须是该任务publisher或TASK_ADMIN才能修改
  *    - name {string} 任务标题
  *    - description {string} 任务描述
- *    - moneyLeft {number} 剩余金额
- *    - moneySpent {number} 已花金额
  *    - status {number} 任物状态
- *    - taskType {number} 任物类型
  *    - expiredAt {date} 失效日期
- *    - submittedAt: {date} 提交日期
- *    - publishedAt: {date} 发布日期
- *    - completedAt: {date} 完成日期
  *    - tags {[string]} 标签
  * @param global {object}
  *  - tasks {object} Tasks model
@@ -164,15 +161,14 @@ async function patchTask(params, global) {
   coreValidate(querySchema, params.query);
   coreValidate(patchTaskSchema, params.data);
   const task = await tasks.findById(params.id).notDeleted();
-  coreAssert(task, errorsEnum.INTERNAL, 'Task not found');
+  coreAssert(task, errorsEnum.EXIST, 'Task does not exist');
   const isPublisher = params.auth && params.auth.uid === task.publisher;
   const isTaskAdmin = params.auth && (params.auth.role & users.roleEnum.TASK_ADMIN);
   coreAssert(isPublisher || isTaskAdmin, errorsEnum.PERMISSION, 'Permission denied');
   await task.set(params.data);
   await task.save();
   return coreOkay({
-    data: params.query.populate === 'true'
-      ? task : task._id
+    data: params.query.populate === 'true' ? task : task._id
   });
 }
 

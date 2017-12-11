@@ -1,4 +1,5 @@
-module.exports = {
-  'image-categorize': require('./image-categorize'),
-  customize: require('./base')
-};
+module.exports = {};
+
+['image-categorize', 'image-collection', 'survey'].forEach(x =>
+  module.exports[x] = require('./' + x)
+);
