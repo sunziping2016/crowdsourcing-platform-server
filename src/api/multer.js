@@ -16,10 +16,12 @@ const {randomAlnumString, promisify} = require('../utils');
  * 中间件，具体使用方法见[`expressjs/multer`](https://github.com/expressjs/multer)。
  *
  * @param options {object} 选项，包含以下内容：
- *   - destination {string} 上传文件路径
- *   - length {Number} 可选，随机文件名的长度，默认为40
- *   - types {Array.<string>} 可选，允许的mime-types，默认不做限定
- *   - maxSize {Number} 可选，最大文件的字节数，默认不做限定
+ *   - destination {string|Object.<string,string>} 上传文件路径
+ *   - length {Number|Object.<string,Number>} 可选，随机文件名的长度，默认为40
+ *   - types {Array.<string>|Object.<string,Array.<string>>} 可选，允许的mime-types，
+ *     默认不做限定
+ *   - maxSize {Number|Object.<string, Number>} 可选，最大文件的字节数，默认不做限定，
+ *     如果传入对象，且希望某些字段不做限制，请使用`Infinity`
  *   - fields {Object.<string, function>} 可选，某些非文件字段的转换函数，用以从字符串
  *     转换为对应的类型
  */
@@ -29,10 +31,23 @@ function multer(options) {
   const multerOptions = {
     storage: multer.diskStorage({
       destination: function (req, file, cb) {
-        cb(null, options.destination);
+        if (typeof options.destination === 'string')
+          cb(null, options.destination);
+        else {
+          // Assume a map
+          cb(null, options.destination[file.fieldname]);
+        }
       },
       filename: function (req, file, cb) {
-        let name = randomAlnumString(options.length);
+        let length;
+        if (typeof options.length === 'number')
+          length = options.length;
+        else if (typeof options.length === 'object' &&
+          options.length[file.fieldname] !== undefined)
+          length = options.length[file.fieldname];
+        else
+          length = 40;
+        let name = randomAlnumString(length);
         const ext = mime.extension(file.mimetype);
         if (ext)
           name += '.' + ext;
@@ -40,14 +55,26 @@ function multer(options) {
       }
     }),
     fileFilter: function (req, file, cb) {
-      if (options.types && options.types.indexOf(file.mimetype) === -1)
+      if (Array.isArray(options.types)) {
+        if (options.types.indexOf(file.mimetype) === -1)
+          cb(coreCreateError(errorsEnum.SCHEMA, 'Wrong file type'));
+        else
+          cb(null, true);
+      } else if (typeof options.types === 'object' &&
+          Array.isArray(options.types[file.fieldname]) &&
+          options.types[file.fieldname].indexOf(file.mimetype) === -1)
         cb(coreCreateError(errorsEnum.SCHEMA, 'Wrong file type'));
       else
         cb(null, true);
     }
   };
-  if (options.maxSize)
+  if (typeof options.maxSize === 'number')
     multerOptions.limits = {fileSize: options.maxSize};
+  else if (typeof options.maxSize === 'object') {
+    const limits = Math.max(...Object.values(options.maxSize));
+    if (limits !== Infinity)
+      multerOptions.limits = {fileSize: limits};
+  }
   const m = originalMulter(multerOptions);
   ['any', 'array', 'fields', 'none', 'single'].forEach(name => {
     if (!m[name])
@@ -75,6 +102,13 @@ function multer(options) {
             Object.values(ctx.req.files).forEach(files =>
               files.forEach(file => ctx.params._files.push(file.path))
             );
+            if (typeof options.maxSize === 'object')
+              Object.keys(options.maxSize).forEach(field =>
+                ctx.params.files[field].forEach(file => {
+                  if (file.size > options.maxSize[field])
+                    coreThrow(errorsEnum.SCHEMA, 'File too large');
+                })
+              );
           }
           if (ctx.req.body) {
             const body = {};

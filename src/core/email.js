@@ -157,7 +157,7 @@ async function confirmEmail(params, global) {
   if (params.data.action === 'create-user') {
     const {createUserSession} = global;
     const data = await createUserSession.loadAndRemove(params.id);
-    coreAssert(data, errorsEnum.INVALID, 'Invalid token');
+    coreAssert(data, errorsEnum.EXIST, 'Invalid token');
     data.role = parseInt(data.role);
     const duplicatedUser = await users.findOne({
       $or: [
@@ -176,7 +176,7 @@ async function confirmEmail(params, global) {
   } else {
     const {resetPasswordSession, jwt} = global;
     const data = await resetPasswordSession.loadAndRemove(params.id);
-    coreAssert(data, errorsEnum.INVALID, 'Invalid token');
+    coreAssert(data, errorsEnum.EXIST, 'Invalid token');
     const user = await users.findById(data.id).notDeleted();
     coreAssert(user, errorsEnum.INVALID, 'User does not exist');
     user.password = await bcrypt.hash(params.data.password, 10);

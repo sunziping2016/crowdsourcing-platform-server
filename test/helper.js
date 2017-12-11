@@ -70,6 +70,12 @@ async function assertThrowsAsync(promise, error, message) {
   }
 }
 
+function filterObjectField(data, fields) {
+  const result = {};
+  fields.forEach(x => result[x] = data[x]);
+  return result;
+}
+
 module.exports = {
   server,
   startServer,
@@ -80,5 +86,7 @@ module.exports = {
   createUsers,
   // async helpers
   setTimeoutAsync,
-  assertThrowsAsync
+  assertThrowsAsync,
+  // other helpers
+  filterObjectField
 };

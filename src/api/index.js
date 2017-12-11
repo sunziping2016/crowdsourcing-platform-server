@@ -16,10 +16,13 @@
  *   - file|files 可选，上传的文件，其中文件的值的内容见[Multer文档](https://github.com/expressjs/multer)
  *   - _files {Array.<string>} 这次请求创建的所有临时文件的路径（不仅是上传的文件，比如还包含处理过的图片），
  *     如果返回值不是200或有异常抛出，上述_files中的文件将被删除
+ *   - _dirs {Array.<string>} 这次请求创建的所有临时文件夹，如果返回值不是200或有异常抛出，
+ *     上述_dirs将被递归删除
  * @module api
  */
 
 const fs = require('fs');
+const rimraf = require('rimraf');
 const logger = require('winston');
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
@@ -53,11 +56,19 @@ async function errorHandler(ctx, next) {
   }
 }
 
-function cleanFiles(files) {
-  files.forEach(file =>
+function cleanFiles(params) {
+  params._files.forEach(file =>
     fs.unlink(file, err => {
       if (err) {
         logger.error(`Failed to delete file "${file}".`);
+        logger.error(err);
+      }
+    })
+  );
+  params._dirs.forEach(dir =>
+    rimraf(dir, err => {
+      if (err) {
+        logger.error(`Failed to delete directory "${dir}".`);
         logger.error(err);
       }
     })
@@ -69,7 +80,7 @@ module.exports = function (global) {
   const userRouter = new UserRouter(global);
   const emailRouter = new EmailRouter();
   const authRouter = new AuthRouter();
-  const taskRouter = new TaskRouter();
+  const taskRouter = new TaskRouter(global);
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => coreThrow(errorsEnum.PARSE, 'Cannot parse body')
@@ -78,7 +89,8 @@ module.exports = function (global) {
     ctx.params = {
       ip: ctx.ip,
       transport: 'ajax',
-      _files: []
+      _files: [],
+      _dirs: []
     };
     if (ctx.request.body)
       ctx.params.data = ctx.request.body;
@@ -98,9 +110,9 @@ module.exports = function (global) {
     try {
       await next();
       if (ctx.status !== 200)
-        cleanFiles(ctx.params._files);
+        cleanFiles(ctx.params);
     } catch (err) {
-      cleanFiles(ctx.params._files);
+      cleanFiles(ctx.params);
       throw err;
     }
   });

@@ -9,7 +9,8 @@ const {randomAlnumString} = require('../utils');
 
 /**
  * 临时回话类。示例对象包括
- *   - emailSession `expire`1天
+ *   - createUserSession
+ *   - resetPasswordSession
  */
 class RedisSession {
   /**

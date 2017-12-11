@@ -1,5 +1,5 @@
 /**
- * 用户models，存储了所有用户（包括管理员和普通用户）的信息。
+ * 用户model，存储了所有用户（包括管理员和普通用户）的信息。
  *
  * @module models/users
  */
@@ -59,8 +59,8 @@ module.exports = function (global) {
     avatarThumbnail64: {type: String},
     createdAt: {type: Date},
     updatedAt: {type: Date},
-    blocked: {type: Boolean},
-    roles: {type: Number},
+    blocked: {type: Boolean, index: true},
+    roles: {type: Number, index: true},
     settings: {type: userSettingsSchema},
     deleted: {type: Boolean, index: true}
   });
@@ -89,7 +89,6 @@ module.exports = function (global) {
       ]
     }
   });
-  userSchema.index({status: 1});
 
   /**
    * 用户的角色到编号的映射

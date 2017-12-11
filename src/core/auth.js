@@ -70,6 +70,7 @@ async function authenticate(params, global) {
     await jwt.revoke(data.uid, data.jti);
     const user = await users.findById(data.uid).notDeleted();
     coreAssert(user, errorsEnum.INVALID, 'User does not exist');
+    coreAssert(user.blocked !== true, errorsEnum.INVALID, 'User blocked');
     const token = await jwt.sign({uid: data.uid, role: user.roles}, {
       expiresIn: '10d'
     });
@@ -80,6 +81,7 @@ async function authenticate(params, global) {
     const user = await users.findOne(params.data.payload).notDeleted();
     coreAssert(user, errorsEnum.INVALID, 'User does not exist');
     coreAssert(await user.checkPassword(password), errorsEnum.INVALID, 'Wrong password');
+    coreAssert(user.blocked !== true, errorsEnum.INVALID, 'User blocked');
     const token = await jwt.sign({uid: user._id.toString(), role: user.roles}, {
       expiresIn: '10d'
     });
