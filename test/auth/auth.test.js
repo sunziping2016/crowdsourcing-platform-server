@@ -7,7 +7,6 @@ const userData = [
   {username: 'foobar', email: 'foobar@example.com', password: '23456789', roles: 0b11100}
 ];
 
-//
 let jwtData;
 
 describe('Auth API test', () => {
