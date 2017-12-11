@@ -61,14 +61,12 @@ module.exports = function (global) {
     valid: {type: Boolean, required: true},
     tags: {type: [String]},
     deadline: {type: Date},
-    status: {type: Number, required: true},
+    status: {type: Number, required: true, index: true},
     data: {type: mongoose.Schema.Types.Mixed},
     createdAt: {type: Date},
     updatedAt: {type: Date},
     deleted: {type: Boolean, index: true}
   });
-
-  taskSchema.index({status: 1});
 
   /**
    * 任务的状态到编号的映射
@@ -82,7 +80,7 @@ module.exports = function (global) {
   addFileFields(taskSchema, ['picture', 'pictureThumbnail'], config['upload-dir']);
 
   taskSchema.methods.toPlainObject = function (auth) {
-    return taskTypes[this.type].toPlainObject(this, auth);
+    return taskTypes[this.type].taskToPlainObject(this, auth);
   };
 
   return db.model('tasks', taskSchema);

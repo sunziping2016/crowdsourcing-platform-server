@@ -89,7 +89,6 @@ module.exports = function (global) {
       ]
     }
   });
-  userSchema.index({status: 1});
 
   /**
    * 用户的角色到编号的映射
