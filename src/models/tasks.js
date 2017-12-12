@@ -5,7 +5,6 @@
  */
 const mongoose = require('mongoose');
 const {addCreatedAt, addUpdatedAt, addDeleted, addFileFields} = require('./hooks');
-const taskTypes = require('../core/task-types');
 
 /**
  * 创建`tasks` model。
@@ -57,7 +56,7 @@ module.exports = function (global) {
     excerption: {type: String, required: true},
     picture: {type: String},
     pictureThumbnail: {type: String},
-    type: {type: String, required: true},
+    type: {type: String},
     valid: {type: Boolean, required: true},
     tags: {type: [String]},
     deadline: {type: Date},
@@ -87,7 +86,24 @@ module.exports = function (global) {
    * @function module:models/tasks~Task#toPlainObject
    */
   taskSchema.methods.toPlainObject = function (auth) {
-    return taskTypes[this.type].taskToPlainObject(this, auth);
+    const result = {
+      _id: this._id.toString(),
+      name: this.name,
+      publisher: this.publisher,
+      description: this.description,
+      excerption: this.excerption,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      tags: this.tags,
+      status: this.status
+    };
+    if (this.type !== undefined)
+      result.type = this.type;
+    if (this.picture !== undefined && this.pictureThumbnail !== undefined) {
+      result.picture = '/uploads/' + this.picture;
+      result.pictureThumbnail = '/uploads/' + this.pictureThumbnail;
+    }
+    return result;
   };
 
   return db.model('tasks', taskSchema);

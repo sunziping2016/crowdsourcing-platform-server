@@ -59,8 +59,8 @@ module.exports = function (global) {
     avatarThumbnail64: {type: String},
     createdAt: {type: Date},
     updatedAt: {type: Date},
-    blocked: {type: Boolean},
-    roles: {type: Number},
+    blocked: {type: Boolean, index: true},
+    roles: {type: Number, index: true},
     settings: {type: userSettingsSchema},
     deleted: {type: Boolean, index: true}
   });

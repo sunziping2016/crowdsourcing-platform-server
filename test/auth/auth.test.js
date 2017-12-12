@@ -4,7 +4,8 @@ const {startServer, stopServer, server, clearRedis, clearDBs,
 
 const userData = [
   {username: 'foo', password: '12345678', roles: 0b11},
-  {username: 'foobar', email: 'foobar@example.com', password: '23456789', roles: 0b11100}
+  {username: 'foobar', email: 'foobar@example.com', password: '23456789', roles: 0b11100},
+  {username: 'bar', email: 'bar@example.com', password: '23456789', roles: 0b11111, blocked: true}
 ];
 
 let jwtData;
@@ -17,12 +18,16 @@ describe('Auth API test', () => {
     await clearDBs();
     request = await startServer();
     (await createUsers(userData)).forEach((x, i) => userData[i]._id = x._id.toString());
-    jwtData = await createJwts(Array(2).fill(undefined).map(() => {
-      return {
-        payload: {uid: userData[0]._id, role: userData[0].roles},
-        options: {expiresIn: '1d'}
-      };
-    }));
+    jwtData = await createJwts([{
+      payload: {uid: userData[0]._id, role: userData[0].roles},
+      options: {expiresIn: '1d'}
+    }, {
+      payload: {uid: userData[0]._id, role: userData[0].roles},
+      options: {expiresIn: '1d'}
+    }, {
+      payload: {uid: userData[2]._id, role: userData[2].roles},
+      options: {expiresIn: '1d'}
+    }]);
     jwt = server.app.context.global.jwt;
   });
   after(async () => {
@@ -52,7 +57,7 @@ describe('Auth API test', () => {
         .send({
           strategy: 'username',
           payload: {
-            username: 'bar',
+            username: 'someone',
             password: '12345678'
           }
         })
@@ -72,6 +77,20 @@ describe('Auth API test', () => {
         })
         .expect(400)
         .then(res => assert.strictEqual(res.body.message, 'Wrong password'))
+    );
+
+    it('should return 400 when user is blocked', () =>
+      request
+        .post('/api/auth')
+        .send({
+          strategy: 'username',
+          payload: {
+            username: 'bar',
+            password: '23456789'
+          }
+        })
+        .expect(400)
+        .then(res => assert.strictEqual(res.body.message, 'User blocked'))
     );
   });
 
@@ -119,6 +138,20 @@ describe('Auth API test', () => {
         .expect(400)
         .then(res => assert.strictEqual(res.body.message, 'Wrong password'))
     );
+
+    it('should return 400 when user is blocked', () =>
+      request
+        .post('/api/auth')
+        .send({
+          strategy: 'email',
+          payload: {
+            email: 'bar@example.com',
+            password: '23456789'
+          }
+        })
+        .expect(400)
+        .then(res => assert.strictEqual(res.body.message, 'User blocked'))
+    );
   });
 
   describe('auth by jwt', () => {
@@ -140,5 +173,18 @@ describe('Auth API test', () => {
       assert.strictEqual(anotherData.uid, userData[0]._id);
       assert.strictEqual(anotherData.role, userData[0].roles);
     });
+
+    it('should return 400 when user is blocked', () =>
+      request
+        .post('/api/auth')
+        .send({
+          strategy: 'jwt',
+          payload: {
+            jwt: jwtData[2]
+          }
+        })
+        .expect(400)
+        .then(res => assert.strictEqual(res.body.message, 'User blocked'))
+    );
   });
 });

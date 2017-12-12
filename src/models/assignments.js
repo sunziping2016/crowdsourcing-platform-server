@@ -5,7 +5,6 @@
  */
 const mongoose = require('mongoose');
 const {addCreatedAt, addUpdatedAt, addDeleted} = require('./hooks');
-const taskTypes = require('../core/task-types');
 
 /**
  * 创建`assignments` model。
@@ -71,7 +70,16 @@ module.exports = function (global) {
    * @function module:models/assignments~Assignment#toPlainObject
    */
   assignmentSchema.methods.toPlainObject = function (auth) {
-    return taskTypes[this.type].assignmentToPlainObject(this, auth);
+    return {
+      _id: this._id.toString(),
+      task: this.task.toString(),
+      publisher: this.publisher.toString(),
+      subscriber: this.subscriber.toString(),
+      type: this.type,
+      status: this.status,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
+    };
   };
 
   return db.model('assignments', assignmentSchema);

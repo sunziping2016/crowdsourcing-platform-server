@@ -14,7 +14,7 @@ module.exports = function (global) {
   }).single('avatar');
   const router = new Router();
   router.post('/', coreToMiddleware(coreUser.createUser));
-  // router.get('/', coreToMiddleware(coreUser.findUser));
+  router.get('/', coreToMiddleware(coreUser.findUser));
   router.get('/:id', coreToMiddleware(coreUser.getUser));
   router.patch('/:id', avtarMulter, coreToMiddleware(coreUser.patchUser));
   router.delete('/:id', coreToMiddleware(coreUser.deleteUser));
