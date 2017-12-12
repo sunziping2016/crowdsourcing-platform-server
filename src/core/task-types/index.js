@@ -1,5 +1,5 @@
 module.exports = {};
 
-['image-categorize', 'image-collection', 'survey'].forEach(x =>
+['guess-number'].forEach(x =>
   module.exports[x] = require('./' + x)
 );
