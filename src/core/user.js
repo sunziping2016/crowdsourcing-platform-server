@@ -59,11 +59,7 @@ async function createUser(params, global) {
   coreValidate(querySchema, params.query);
   coreValidate(createUserSchema, params.data);
   const duplicatedUser = await users.findOne({username: params.data.username}).notDeleted();
-  if (duplicatedUser)
-    coreThrow(errorsEnum.INVALID,
-      duplicatedUser.username === params.data.username
-        ? 'Username has been taken' : 'Email has been taken'
-    );
+  coreAssert(duplicatedUser === null, errorsEnum.INVALID, 'Username has been taken');
   params.data.password = await bcrypt.hash(params.data.password, 10);
   let role = 0;
   params.data.roles.forEach(x => role |= users.roleEnum[x]);
@@ -82,7 +78,7 @@ async function createUser(params, global) {
  *   - socket.io: emit user:get
  * @param params 请求数据
  *   - auth {object} 权限
- *   - id {string} 要获取的用户信息的ID
+ *   - id {string} 要获取的用户信息的Email has been takenID
  * @param global
  * @return {Promise.<object>}
  */
