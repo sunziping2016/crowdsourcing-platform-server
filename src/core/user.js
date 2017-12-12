@@ -5,7 +5,7 @@
 
 const ajv = new (require('ajv'))();
 const bcrypt = require('bcrypt');
-const {errorsEnum, coreOkay, coreValidate, coreThrow, coreAssert} = require('./errors');
+const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('./errors');
 const {makeThumbnail} = require('./utils');
 
 const idRegex = /^[a-f\d]{24}$/i;
@@ -59,11 +59,7 @@ async function createUser(params, global) {
   coreValidate(querySchema, params.query);
   coreValidate(createUserSchema, params.data);
   const duplicatedUser = await users.findOne({username: params.data.username}).notDeleted();
-  if (duplicatedUser)
-    coreThrow(errorsEnum.INVALID,
-      duplicatedUser.username === params.data.username
-        ? 'Username has been taken' : 'Email has been taken'
-    );
+  coreAssert(duplicatedUser === null, errorsEnum.INVALID, 'Username has been taken');
   params.data.password = await bcrypt.hash(params.data.password, 10);
   let role = 0;
   params.data.roles.forEach(x => role |= users.roleEnum[x]);
@@ -82,7 +78,7 @@ async function createUser(params, global) {
  *   - socket.io: emit user:get
  * @param params 请求数据
  *   - auth {object} 权限
- *   - id {string} 要获取的用户信息的ID
+ *   - id {string} 要获取的用户信息的Email has been takenID
  * @param global
  * @return {Promise.<object>}
  */
@@ -153,7 +149,7 @@ async function findUser(params, global) {
     limit = 10;
   if (params.query.filter !== undefined) {
     if (params.query.filter.role !== undefined)
-      params.query.filter.role = {
+      params.query.filter.roles = {
         $bitsAllSet: users.roleEnum[params.query.filter.role]
       };
     if (params.query.filter.blocked !== undefined)
@@ -181,8 +177,10 @@ async function findUser(params, global) {
     if (result.data.length !== 0)
       result.lastId = result.data[result.data.length - 1];
   }
-  if (params.query.count === 'true')
+  if (params.query.count === 'true') {
+    delete params.query.filter._id;
     result.total = await users.count(params.query.filter).notDeleted();
+  }
   return coreOkay({data: result});
 }
 

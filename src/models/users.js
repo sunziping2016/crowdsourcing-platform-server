@@ -7,6 +7,14 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const {addCreatedAt, addUpdatedAt, addDeleted, addFileFields} = require('./hooks');
 
+const roleEnum = {
+  SUBSCRIBER: 1 << 0,
+  PUBLISHER: 1 << 1,
+  TASK_ADMIN: 1 << 2,
+  USER_ADMIN: 1 << 3,
+  SITE_ADMIN: 1 << 4
+};
+
 /**
  * 创建`users` model。
  *
@@ -17,13 +25,6 @@ const {addCreatedAt, addUpdatedAt, addDeleted, addFileFields} = require('./hooks
  */
 module.exports = function (global) {
   const {config, db} = global;
-  const roleEnum = {
-    SUBSCRIBER: 1 << 0,
-    PUBLISHER: 1 << 1,
-    TASK_ADMIN: 1 << 2,
-    USER_ADMIN: 1 << 3,
-    SITE_ADMIN: 1 << 4
-  };
 
   const userSettingsSchema = new mongoose.Schema({
   });
@@ -151,3 +152,5 @@ module.exports = function (global) {
 
   return db.model('users', userSchema);
 };
+
+module.exports.roleEnum = roleEnum;

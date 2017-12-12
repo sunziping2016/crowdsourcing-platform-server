@@ -4,7 +4,9 @@ const {startServer, stopServer, server, clearRedis, clearDBs,
 
 const userData = [
   {username: 'foo', password: '12345678', roles: 0b11},
-  {username: 'foobar', email: 'foobar@example.com', password: '23456789', roles: 0b11100}
+  {username: 'foobar', email: 'foobar@example.com', password: '23456789', roles: 0b11100},
+  {username: 'foo2', password: '12345678', roles: 0b11},
+  {username: 'foo3', password: '12345678', roles: 0b11}
 ];
 
 let jwtData;
@@ -33,12 +35,12 @@ describe('User API test', () => {
         .post('/api/user')
         .set('Authorization', 'Bearer ' + jwtData)
         .send({
-          'username': 'abcde',
-          'password': 'abcdefgh',
-          'roles': ['SUBSCRIBER']
+          username: 'abcde',
+          password: 'abcdefgh',
+          roles: ['SUBSCRIBER']
         })
         .expect(200)).body.data;
-      const user = await users.findById(id);
+      const user = await users.findById(id).notDeleted();
       assert.strictEqual(typeof user, 'object');
       assert.deepStrictEqual(filterObjectField(user, ['username', 'roles']), {
         username: 'abcde',
@@ -51,13 +53,57 @@ describe('User API test', () => {
         .post('/api/user')
         .set('Authorization', 'Bearer ' + jwtData)
         .send({
-          'username': 'foo',
-          'password': 'abcdefgh',
-          'roles': ['SUBSCRIBER']
+          username: 'foo',
+          password: 'abcdefgh',
+          roles: ['SUBSCRIBER']
         })
         .expect(400)
         .then(req =>
           assert.strictEqual(req.body.message, 'Username has been taken')
+        );
+    });
+  });
+
+  describe('delete user test', () => {
+    it('should return 200 when everything is okay', async () => {
+      const id = userData[2]._id;
+      return request
+        .delete('/api/user/' + id)
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({username: 'fo2', password: '12345678', roles: 0b11})
+        .expect(200);
+    });
+
+    it('should return 404 when User does not exist', async () => {
+      return request
+        .delete('/api/user/5a2f729456c6074539760fb0')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send()
+        .expect(404)
+        .then(req =>
+          assert.strictEqual(req.body.message, 'User does not exist')
+        );
+    });
+  });
+
+  describe('get user info test', () => {
+    it('should return 200 when everything is okay', async () => {
+      const id = userData[3]._id;
+      return request
+        .delete('/api/user/' + id)
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({username: 'fo2', password: '12345678', roles: 0b11})
+        .expect(200);
+    });
+
+    it('should return 404 when User does not exist', async () => {
+      return request
+        .delete('/api/user/5a2f729456c6074539760fb0')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send()
+        .expect(404)
+        .then(req =>
+          assert.strictEqual(req.body.message, 'User does not exist')
         );
     });
   });

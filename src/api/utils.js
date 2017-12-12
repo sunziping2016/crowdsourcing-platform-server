@@ -9,7 +9,9 @@
  */
 function coreToMiddleware(func) {
   return async function createUser(ctx) {
-    ctx.body = await func(ctx.params, ctx.global);
+    const result = await func(ctx.params, ctx.global);
+    if (result !== undefined)
+      ctx.body = result;
   };
 }
 

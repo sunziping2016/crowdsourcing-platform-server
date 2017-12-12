@@ -166,6 +166,7 @@ module.exports = async function (global) {
         });
       });
       await model.setSecretKey(secretKey);
+      logger.warn('Generate new secret key');
     }
   }
   return model;

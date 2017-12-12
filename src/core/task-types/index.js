@@ -1,4 +1,5 @@
-module.exports = {
-  'image-categorize': require('./image-categorize'),
-  customize: require('./base')
-};
+module.exports = {};
+
+['guess-number'].forEach(x =>
+  module.exports[x] = require('./' + x)
+);
