@@ -14,7 +14,9 @@ module.exports = function (global) {
     }
   }).single('picture');
   router.post('/', pictureMulter, coreToMiddleware(coreTask.createTask));
+  router.get('/', coreToMiddleware(coreTask.findTask));
   router.get('/:id', coreToMiddleware(coreTask.getTask));
   router.patch('/:id', pictureMulter, coreToMiddleware(coreTask.patchTask));
+  router.delete('/:id', coreToMiddleware(coreTask.deleteTask));
   return router;
 };

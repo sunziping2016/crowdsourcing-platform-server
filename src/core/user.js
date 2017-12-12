@@ -5,7 +5,7 @@
 
 const ajv = new (require('ajv'))();
 const bcrypt = require('bcrypt');
-const {errorsEnum, coreOkay, coreValidate, coreThrow, coreAssert} = require('./errors');
+const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('./errors');
 const {makeThumbnail} = require('./utils');
 
 const idRegex = /^[a-f\d]{24}$/i;
@@ -149,7 +149,7 @@ async function findUser(params, global) {
     limit = 10;
   if (params.query.filter !== undefined) {
     if (params.query.filter.role !== undefined)
-      params.query.filter.role = {
+      params.query.filter.roles = {
         $bitsAllSet: users.roleEnum[params.query.filter.role]
       };
     if (params.query.filter.blocked !== undefined)
@@ -177,8 +177,10 @@ async function findUser(params, global) {
     if (result.data.length !== 0)
       result.lastId = result.data[result.data.length - 1];
   }
-  if (params.query.count === 'true')
+  if (params.query.count === 'true') {
+    delete params.query.filter._id;
     result.total = await users.count(params.query.filter).notDeleted();
+  }
   return coreOkay({data: result});
 }
 

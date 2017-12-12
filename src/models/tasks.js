@@ -5,6 +5,7 @@
  */
 const mongoose = require('mongoose');
 const {addCreatedAt, addUpdatedAt, addDeleted, addFileFields} = require('./hooks');
+const {roleEnum} = require('./users');
 
 /**
  * 创建`tasks` model。
@@ -21,8 +22,7 @@ module.exports = function (global) {
     EDITING: 0,
     SUBMITTED: 1,
     ADMITTED: 2,
-    PUBLISHED: 3,
-    COMPLETED: 4
+    PUBLISHED: 3
   };
 
   /**
@@ -42,11 +42,14 @@ module.exports = function (global) {
    *    - SUBMITTED：待审核
    *    - ADMITTED：待发布
    *    - PUBLISHED：已发布
-   *    - COMPLETED：已完成
+   *  - `remain`：数字，进度
+   *  - `total`：数字，进度总数，如果为-1表示无穷
    *  - `data` 额外数据
    *  - `createdAt`：创建时间，自动字段
    *  - `updatedAt`：更新时间，自动字段
    *  - `deleted` 是否被删除
+   *
+   *  注意，其中`valid`，`remain`、`total`和`data`都是交给特殊逻辑处理的，其余都是通用逻辑处理。
    *  @class Task
    */
   const taskSchema = new mongoose.Schema({
@@ -61,6 +64,8 @@ module.exports = function (global) {
     tags: {type: [String]},
     deadline: {type: Date},
     status: {type: Number, required: true, index: true},
+    remain: {type: Number},
+    total: {type: Number},
     data: {type: mongoose.Schema.Types.Mixed},
     createdAt: {type: Date},
     updatedAt: {type: Date},
@@ -86,6 +91,8 @@ module.exports = function (global) {
    * @function module:models/tasks~Task#toPlainObject
    */
   taskSchema.methods.toPlainObject = function (auth) {
+    const isPublisher = auth && this.publisher.equals(auth.uid);
+    const isTaskAdmin = auth && (auth.role & roleEnum.TASK_ADMIN) !== 0;
     const result = {
       _id: this._id.toString(),
       name: this.name,
@@ -103,6 +110,12 @@ module.exports = function (global) {
       result.picture = '/uploads/' + this.picture;
       result.pictureThumbnail = '/uploads/' + this.pictureThumbnail;
     }
+    if (this.remain !== undefined && this.total !== undefined) {
+      result.remain = this.remain;
+      result.total = this.total;
+    }
+    if (isPublisher || isTaskAdmin)
+      result.valid = !!this.valid;
     return result;
   };
 
