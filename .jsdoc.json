@@ -7,7 +7,7 @@
     "plugins/markdown"
   ],
   "source": {
-    "include": ["src", "package.json", "README.md"],
+    "include": ["src", "task-templates", "package.json", "README.md"],
     "includePattern": ".js$"
   },
   "templates": {

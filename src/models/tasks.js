@@ -66,7 +66,7 @@ module.exports = function (global) {
     status: {type: Number, required: true, index: true},
     remain: {type: Number},
     total: {type: Number},
-    data: {type: mongoose.Schema.Types.Mixed},
+    data: {type: mongoose.Schema.Types.Mixed, select: false},
     createdAt: {type: Date},
     updatedAt: {type: Date},
     deleted: {type: Boolean, index: true}

@@ -18,6 +18,7 @@ module.exports = function (global) {
   router.get('/:id', coreToMiddleware(coreTask.getTask));
   router.patch('/:id', pictureMulter, coreToMiddleware(coreTask.patchTask));
   router.delete('/:id', coreToMiddleware(coreTask.deleteTask));
-  router.post('/:id/data', coreToMiddleware(coreTask.postTaskData));
+  router.post('/:id/data', coreTask.postTaskData);
+  router.get('/:id/data', coreTask.getTaskData);
   return router;
 };

@@ -22,6 +22,7 @@
   },
   "upload-dir": "uploads",
   "temp-dir": "temp",
+  "task-template-dir": "./task-templates",
   "cluster": false,
   "log-level": "info",
   "static": true

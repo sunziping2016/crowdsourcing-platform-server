@@ -19,6 +19,7 @@ const Models = require('./models');
 const Api = require('./api');
 const {promisify} = require('./utils');
 const redisCommands = require('redis-commands');
+const {loadTaskTemplates} = require('./task-template');
 
 mongoose.Promise = Promise;
 
@@ -59,6 +60,7 @@ class Server {
     const sioRedis = Redis.createClient(config.redis);
     const server = http.createServer(app.callback());
     const sio = Sio(server);
+    const taskTemplates = await loadTaskTemplates(config['task-template-dir']);
     sio.adapter(SioRedis({
       pubClient: redis,
       subClient: sioRedis
@@ -69,7 +71,9 @@ class Server {
       redis,               // Redis数据库的连接
       sioRedis,            // Redis数据库的连接，专门用于Socket.IO的监听事件
       server,              // HTTP server实例
-      sio                  // Socket.IO服务端
+      sio,                 // Socket.IO服务端
+      taskTemplates: taskTemplates.ids,
+      taskTemplatesByFile: taskTemplates.files
     };
     if (config.email)
       global.email = mailer.createTransport(config.email); // E-mail邮件传输
@@ -109,6 +113,7 @@ class Server {
       db: 'mongodb://localhost/crowdsource',
       redis: 'redis://localhost/',
       'upload-dir': 'uploads',
+      'task-template-dir': './task-templates',
       'temp-dir': 'temp',
       'static': false
     };

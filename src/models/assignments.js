@@ -46,7 +46,7 @@ module.exports = function (global) {
     subscriber: {type: mongoose.Schema.Types.ObjectId, required: true, index: true},
     type: {type: String, required: true},
     status: {type: Number, required: true},
-    data: {type: mongoose.Schema.Types.Mixed},
+    data: {type: mongoose.Schema.Types.Mixed, select: false},
     createdAt: {type: Date},
     updatedAt: {type: Date},
     deleted: {type: Boolean, index: true}
