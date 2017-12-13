@@ -9,10 +9,11 @@ const ignore = new Set(['.gitignore']);
 
 const metaSchema = ajv.compile({
   type: 'object',
-  required: ['name', 'id'],
+  required: ['id', 'name', 'description'],
   properties: {
-    name: {type: 'string', minLength: 1},
     id: {type: 'string', pattern: '^[-_a-zA-Z\\d]+$'},
+    name: {type: 'string', minLength: 1},
+    description: {type: 'string', minLength: 1},
     enabled: {type: 'boolean'}
   }
 });

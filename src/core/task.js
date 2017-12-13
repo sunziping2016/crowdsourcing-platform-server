@@ -69,7 +69,7 @@ async function createTask(params, global) {
   coreValidate(createTaskSchema, params.data);
   coreAssert(params.data.type === undefined ||
     (taskTemplates[params.data.type] !== undefined &&
-      taskTemplates[params.data.type].enabled), errorsEnum.INVALID, {
+      taskTemplates[params.data.type].meta.enabled), errorsEnum.INVALID, {
     message: 'Invalid type',
     data: Object.keys(taskTemplates)
   });
@@ -256,7 +256,6 @@ async function findTask(params, global) {
     params.query.filter._id = {$gt: params.query.lastId};
     result.lastId = params.query.lastId;
   }
-  console.log(params.query.filter);
   if (params.query.populate === 'true') {
     result.data = (await tasks.find(params.query.filter)
       .notDeleted()
@@ -347,7 +346,7 @@ async function patchTask(params, global) {
   if (params.data.type !== undefined) {
     coreAssert(task.type === undefined, errorsEnum.INVALID, 'Task already has a type');
     coreAssert(taskTemplates[params.data.type] !== undefined &&
-        taskTemplates[params.data.type].enabled, errorsEnum.INVALID, {
+        taskTemplates[params.data.type].meta.enabled, errorsEnum.INVALID, {
       message: 'Invalid type',
       data: Object.keys(taskTemplates)
     });
@@ -404,12 +403,13 @@ async function deleteTask(params, global) {
 }
 
 async function postTaskData(ctx) {
-  const {params, global, taskTemplates} = ctx;
-  const {tasks} = global;
+  const {params, global} = ctx;
+  const {tasks, taskTemplates} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const task = await tasks.findById(params.id).notDeleted().select('+data');
   coreAssert(task, errorsEnum.EXIST, 'Task does not exist');
-  coreAssert(task.type !== undefined, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(task.type !== undefined || taskTemplates[task.type] === undefined,
+    errorsEnum.INVALID, 'Invalid task type');
   const taskType = taskTemplates[task.type];
   let data;
   if (typeof taskType.postTaskDataMiddleware === 'function')
@@ -418,16 +418,19 @@ async function postTaskData(ctx) {
     );
   else
     data = taskType.postTaskData(task, params, global);
-  return data;
+  data = await data;
+  if (data !== undefined)
+    ctx.body = data;
 }
 
 async function getTaskData(ctx) {
-  const {params, global, taskTemplates} = ctx;
-  const {tasks} = global;
+  const {params, global} = ctx;
+  const {tasks, taskTemplates} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const task = await tasks.findById(params.id).notDeleted().select('+data');
   coreAssert(task, errorsEnum.EXIST, 'Task does not exist');
-  coreAssert(task.type !== undefined, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(task.type !== undefined || taskTemplates[task.type] === undefined,
+    errorsEnum.INVALID, 'Invalid task type');
   const taskType = taskTemplates[task.type];
   let data;
   if (typeof taskType.getTaskDataMiddleware === 'function')
@@ -436,7 +439,9 @@ async function getTaskData(ctx) {
     );
   else
     data = taskType.getTaskData(task, params, global);
-  return data;
+  data = await data;
+  if (data !== undefined)
+    ctx.body = data;
 }
 
 module.exports = {
