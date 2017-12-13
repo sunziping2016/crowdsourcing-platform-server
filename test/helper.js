@@ -24,7 +24,7 @@ function stopServer() {
 
 async function clearRedis() {
   const redis = Redis.createClient(config.redis);
-  await redis.flushallAsync();
+  await redis.flushdbAsync();
   redis.quit();
 }
 

@@ -9,6 +9,10 @@ async function getAssignmentData(assignment, params, global) {}
 async function changeAssignmentStatus(assignment, status, params, global) {}
 
 module.exports = {
+  meta: {
+    name: '猜数字',
+    id: 'guess-number'
+  },
   postTaskData,
   getTaskData,
   createAssignment,

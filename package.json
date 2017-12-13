@@ -37,6 +37,7 @@
     "captchapng": "^0.0.1",
     "chalk": "^2.2.0",
     "commander": "^2.11.0",
+    "decache": "^4.3.0",
     "http-errors": "^1.6.2",
     "jsonwebtoken": "^8.1.0",
     "koa": "^2.3.0",
