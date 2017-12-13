@@ -148,12 +148,19 @@ async function findUser(params, global) {
   } else
     limit = 10;
   if (params.query.filter !== undefined) {
-    if (params.query.filter.role !== undefined)
+    if (params.query.filter.role !== undefined) {
       params.query.filter.roles = {
         $bitsAllSet: users.roleEnum[params.query.filter.role]
       };
-    if (params.query.filter.blocked !== undefined)
-      params.query.filter.blocked = params.query.filter.blocked === 'true';
+      delete params.query.filter.role;
+    }
+    if (params.query.filter.blocked !== undefined) {
+      const blocked = params.query.filter.blocked === 'true';
+      if (blocked)
+        params.query.filter.blocked = true;
+      else
+        params.query.filter.blocked = {$ne: true};
+    }
   } else
     params.query.filter = {};
   const result = {};
