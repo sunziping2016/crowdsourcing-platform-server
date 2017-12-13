@@ -100,6 +100,7 @@ const findUserSchema = ajv.compile({
     filter: {
       type: 'object',
       properties: {
+        search: {type: 'string'},
         username: {type: 'string'},
         email: {type: 'string'},
         role: {
@@ -126,6 +127,7 @@ const findUserSchema = ajv.compile({
  *     - populate {boolean} 是否展开数据
  *     - count {boolean} 统计总数，需要额外的开销
  *     - filter {Object.<string, string|Array<string>>}
+ *         - search {string} 全文检索
  *         - username {string}
  *         - email {string}
  *         - role {string} 权限，某个值
@@ -148,6 +150,19 @@ async function findUser(params, global) {
   } else
     limit = 10;
   if (params.query.filter !== undefined) {
+    if (params.query.filter.search !== undefined) {
+      const search = params.query.filter.search
+        .split(/\s+/).filter(x => x)
+        .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'i'));
+      delete params.query.filter.search;
+      if (search.length !== 0) {
+        const or = params.query.filter.$or = params.query.filter.$or || [];
+        search.forEach(x => {
+          or.push({username: {$regex: x}});
+          or.push({email: {$regex: x}});
+        });
+      }
+    }
     if (params.query.filter.role !== undefined) {
       params.query.filter.roles = {
         $bitsAllSet: users.roleEnum[params.query.filter.role]
