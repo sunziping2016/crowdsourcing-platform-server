@@ -29,9 +29,9 @@ const createTaskSchema = ajv.compile({
   type: 'object',
   required: ['name', 'description', 'excerption'],
   properties: {
-    name: {type: 'string'},
-    description: {type: 'string'},
-    excerption: {type: 'string', maxLength: 140},
+    name: {type: 'string', minLength: 1},
+    description: {type: 'string', minLength: 1},
+    excerption: {type: 'string', minLength: 1, maxLength: 140},
     deadline: {type: 'string', format: 'date-time'},
     type: {type: 'string'},
     tags: {
@@ -84,11 +84,11 @@ async function createTask(params, global) {
   if (params.data.deadline !== undefined)
     params.data.deadline = new Date(params.data.deadline);
   const task = await new tasks(
-    Object.assign({}, params.data, {
+    Object.assign({
       valid: false,
       status: tasks.statusEnum.EDITING,
       publisher: params.auth.uid
-    })
+    }, params.data)
   );
   if (params.file) {
     const thumbnail = await makeThumbnail(params.file.path, {
@@ -141,9 +141,9 @@ const findTaskSchema = ajv.compile({
       type: 'object',
       properties: {
         search: {type: 'string'},
-        name: {type: 'string'},
-        description: {type: 'string'},
-        excerption: {type: 'string'},
+        name: {type: 'string', minLength: 1},
+        description: {type: 'string', minLength: 1},
+        excerption: {type: 'string', minLength: 1},
         publisher: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
         tag: {type: 'string', minLength: 1},
         type: {type: 'string'},
@@ -306,9 +306,9 @@ async function findTask(params, global) {
 const patchTaskSchema = ajv.compile({
   type: 'object',
   properties: {
-    name: {type: 'string'},
-    description: {type: 'string'},
-    excerption: {type: 'string', maxLength: 140},
+    name: {type: 'string', minLength: 1},
+    description: {type: 'string', minLength: 1},
+    excerption: {type: 'string', minLength: 1, maxLength: 140},
     deadline: {type: ['string', 'null'], format: 'date-time'},
     type: {type: 'string'},
     tags: {
