@@ -114,6 +114,8 @@ module.exports = function (global) {
       result.remain = this.remain;
       result.total = this.total;
     }
+    if (this.deadline !== undefined)
+      result.deadline = this.deadline;
     if (isPublisher || isTaskAdmin)
       result.valid = !!this.valid;
     return result;

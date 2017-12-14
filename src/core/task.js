@@ -310,7 +310,7 @@ const patchTaskSchema = ajv.compile({
     name: {type: 'string'},
     description: {type: 'string'},
     excerption: {type: 'string', maxLength: 140},
-    deadline: {type: 'string', format: 'date-time'},
+    deadline: {type: ['string', 'null'], format: 'date-time'},
     type: {type: 'string'},
     tags: {
       type: 'array',
@@ -342,7 +342,7 @@ const patchTaskSchema = ajv.compile({
  *    - excerption {string} 任务摘要，无Markdown，最长只能有140字
  *    - tags {string[]} 标签，最多只有5个
  *    - type {string} 任务类型，如果创建的时候指定了就不能够再次更改
- *    - deadline {string} 可选，失效日期
+ *    - deadline {string|null} 可选，失效日期
  *    - status {string} 任务状态，`EDITING`，`SUBMITTED`，`ADMITTED`和`PUBLISHED`
  * @param global {object}
  *  - tasks {object} Tasks model
@@ -376,8 +376,12 @@ async function patchTask(params, global) {
       data: Object.keys(taskTemplates)
     });
   }
-  if (params.data.deadline !== undefined)
-    params.data.deadline = new Date(params.data.deadline);
+  if (params.data.deadline !== undefined) {
+    if (params.data.deadline === null)
+      params.data.deadline = undefined;
+    else
+      params.data.deadline = new Date(params.data.deadline);
+  }
   if (params.data.status !== undefined) {
     params.data.status = tasks.statusEnum[params.data.status];
     if (params.data.status === task.status)
