@@ -476,6 +476,11 @@ async function postTaskData(ctx) {
     ctx.body = coreOkay();
 }
 
+/**
+ * 获取任务数据，可以是任务的发布者，或订阅者且任务处于`PUBLISHED`状态
+ * @param ctx {object} koa的context
+ * @return {Promise<void>}
+ */
 async function getTaskData(ctx) {
   const {params, global} = ctx;
   const {users, tasks, taskTemplates} = global;

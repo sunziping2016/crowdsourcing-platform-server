@@ -25,6 +25,14 @@ const queryWithDataSchema = ajv.compile({
   additionalProperties: false
 });
 
+const dataSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    data: {type: 'string', enum: ['false', 'true']}
+  },
+  additionalProperties: false
+});
+
 const createAssignmentSchema = ajv.compile({
   type: 'object',
   required: ['task'],
@@ -330,8 +338,77 @@ async function deleteAssignment(params, global) {
   return coreOkay();
 }
 
-async function postAssignmentData(ctx) {}
-async function getAssignmentData(ctx) {}
+/**
+ * 上传作业数据，提交者必须为作业的订阅者，且作业处于`EDITING`状态
+ * @param ctx {object} koa的context
+ *   - params {object} 请求的数据
+ *     - query {object} 请求的query
+ *       - data {boolean} 是否返回数据，默认false
+ * @return {Promise<void>}
+ */
+async function postAssignmentData(ctx) {
+  const {params, global} = ctx;
+  const {assignments, taskTemplates} = global;
+  coreValidate(dataSchema, params.query);
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted().select('+data');
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(assignment.type !== undefined && taskTemplates[assignment.type] !== undefined &&
+    taskTemplates[assignment.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(params.auth && assignment.subscriber.equals(params.auth.uid),
+    errorsEnum.PERMISSION, 'Requires subscriber privilege');
+  coreAssert(assignment.status === assignments.statusEnum.EDITING,
+    errorsEnum.INVALID, 'Assignment is not at EDITING status');
+  const taskType = taskTemplates[assignment.type];
+  let data;
+  const next = async () => {
+    if (typeof taskType.postAssignmentData === 'function')
+      data = await taskType.postAssignmentData(assignment, params, global);
+  };
+  if (typeof taskType.postAssignmentDataMiddleware === 'function')
+    await taskType.postAssignmentDataMiddleware(ctx, next);
+  else
+    await next();
+  if (data !== undefined)
+    ctx.body = data;
+  else if (params.query.data === 'true')
+    ctx.body = coreOkay({
+      data: (typeof taskType.assignmentDataToPlainObject === 'function' &&
+        taskType.assignmentDataToPlainObject(assignment, params.auth)) || {}
+    });
+  else
+    ctx.body = coreOkay();
+}
+
+/**
+ * 获取作业数据，可以是作业的发布者，或订阅者
+ * @param ctx {object} koa的context
+ * @return {Promise<void>}
+ */
+async function getAssignmentData(ctx) {
+  const {params, global} = ctx;
+  const {assignments, taskTemplates} = global;
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted().select('+data');
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(assignment.type !== undefined && taskTemplates[assignment.type] !== undefined &&
+    taskTemplates[assignment.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(params.auth && (assignment.subscriber.equals(params.auth.uid) ||
+    assignment.publisher.equals(params.auth.uid)),
+    // eslint-disable-next-line
+    errorsEnum.PERMISSION, 'Permission denied');
+  const taskType = taskTemplates[assignment.type];
+  let data;
+  if (typeof taskType.getAssignmentData === 'function')
+    data = await taskType.getAssignmentData(assignment, params, global);
+  if (data !== undefined)
+    ctx.body = data;
+  else
+    ctx.body = coreOkay({
+      data: (typeof taskType.assignmentDataToPlainObject === 'function' &&
+        taskType.assignmentDataToPlainObject(assignment, params.auth)) || {}
+    });
+}
 
 module.exports = {
   createAssignment,
