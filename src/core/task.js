@@ -33,7 +33,7 @@ const createTaskSchema = ajv.compile({
     description: {type: 'string', minLength: 1},
     excerption: {type: 'string', minLength: 1, maxLength: 140},
     deadline: {type: 'string', format: 'date-time'},
-    type: {type: 'string'},
+    type: {type: 'string', pattern: '^[-_a-zA-Z\\d]+$'},
     tags: {
       type: 'array',
       items: {
@@ -144,7 +144,8 @@ const findTaskSchema = ajv.compile({
         name: {type: 'string', minLength: 1},
         publisher: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
         tag: {type: 'string', minLength: 1},
-        type: {type: 'string'},
+        type: {type: 'string', pattern: '^[-_a-zA-Z\\d]+$'},
+        valid: {type: 'string', enum: ['true', 'false']},
         deadline: {
           type: 'object',
           properties: {
@@ -173,7 +174,7 @@ const findTaskSchema = ajv.compile({
  *   - query {object} 请求的query
  *     - populate {boolean} 是否展开数据
  *     - count {boolean} 统计总数，需要额外的开销
- *     - filter {Object.<string, string|Array<string>>}
+ *     - filter {Object.<string, string>}
  *         - search {string} 全文检索
  *         - name {string}
  *         - publisher {string} 对于发布者，这个值只能是自己。必须拥有TASK_ADMIN权限
@@ -184,6 +185,7 @@ const findTaskSchema = ajv.compile({
  *         - deadline {{from:string, to:string}} 某个时间范围，无deadline等价于deadline无穷
  *         - status 对于普通用户，这个值只能是`PUBLISHED`，而发布者和任务管理员可以设置别的值，
  *           同样考虑多种权限的用户的请求一致性，建议以普通用户搜索时永远设置这个值。
+ *         - valid {boolean}
  *         - completed {boolean} 对于没有进度概念的，等价于永远未完成
  *     - limit {number} 可选，小于等于50大于0数字，默认为10
  *     - lastId {string} 可选，请求的上一个Id
@@ -208,6 +210,7 @@ async function findTask(params, global) {
     coreAssert(limit > 0 && limit < 50, errorsEnum.SCHEMA, 'Invalid limit');
   } else
     limit = 10;
+  const and = params.query.filter.$and = [];
   if (params.query.filter !== undefined) {
     if (params.query.filter.search !== undefined) {
       const search = params.query.filter.search
@@ -215,14 +218,17 @@ async function findTask(params, global) {
         .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'i'));
       delete params.query.filter.search;
       if (search.length !== 0) {
-        const or = params.query.filter.$or = params.query.filter.$or || [];
+        const or = [];
         search.forEach(x => {
           or.push({name: {$regex: x}});
           or.push({description: {$regex: x}});
           or.push({excerption: {$regex: x}});
         });
+        and.push({$or: or});
       }
     }
+    if (params.query.valid !== undefined)
+      params.query.valid = params.query.valid === 'true';
     if (params.query.filter.tag !== undefined) {
       params.query.filter.tags = params.query.filter.tag;
       delete params.query.filter.tag;
@@ -230,31 +236,31 @@ async function findTask(params, global) {
     if (params.query.filter.deadline !== undefined) {
       const from = params.query.filter.deadline.from;
       const to = params.query.filter.deadline.to;
-      delete params.query.filter.deadline.from;
-      delete params.query.filter.deadline.to;
-      if (from !== undefined && to !== undefined) {
-        params.query.filter.$and = params.query.filter.$and || [];
-        params.query.filter.$and.push({deadline: {$gte: new Date(from)}});
-        params.query.filter.$and.push({deadline: {$lte: new Date(to)}});
-      } else if (to !== undefined)
+      delete params.query.filter.deadline;
+      if (from !== undefined && to !== undefined)
+        params.query.filter.deadline = {$gte: new Date(from), $lte: new Date(to)};
+      else if (to !== undefined)
         params.query.filter.deadline = {$lte: new Date(to)};
       else if (from !== undefined) {
-        params.query.filter.$or = params.query.filter.$or || [];
-        params.query.filter.$or.push({deadline: {$exists: false}});
-        params.query.filter.$or.push({deadline: {$gte: new Date(from)}});
+        const or = [];
+        or.push({deadline: {$exists: false}});
+        or.push({deadline: {$gte: new Date(from)}});
+        and.push({$or: or});
       }
     }
     if (params.query.filter.status !== undefined)
       params.query.filter.status = tasks.statusEnum[params.query.filter.status];
     if (params.query.filter.completed !== undefined) {
-      const completed = params.query.filter.completed;
+      const completed = params.query.filter.completed === 'true';
       delete params.query.filter.completed;
-      params.query.filter.$or = params.query.filter.$or || [];
-      params.query.filter.$or.push({remain: {$exists: false}});
       if (completed)
-        params.query.filter.$or.push({remain: {$lte: 0}});
-      else
-        params.query.filter.$or.push({remain: {$gt: 0}});
+        params.query.filter.remain = {$lte: 0};
+      else {
+        const or = [];
+        or.push({remain: {$exists: false}});
+        or.push({remain: {$gt: 0}});
+        and.push({$or: or});
+      }
     }
   } else
     params.query.filter = {};
@@ -271,6 +277,8 @@ async function findTask(params, global) {
     else
       params.query.filter.status = tasks.statusEnum.PUBLISHED;
   }
+  if (params.query.filter.$and.length === 0)
+    delete params.query.filter.$and;
   const result = {};
   if (params.query.lastId !== undefined) {
     params.query.filter._id = {$gt: params.query.lastId};
@@ -306,7 +314,7 @@ const patchTaskSchema = ajv.compile({
     description: {type: 'string', minLength: 1},
     excerption: {type: 'string', minLength: 1, maxLength: 140},
     deadline: {type: ['string', 'null'], format: 'date-time'},
-    type: {type: 'string'},
+    type: {type: 'string', pattern: '^[-_a-zA-Z\\d]+$'},
     tags: {
       type: 'array',
       items: {
