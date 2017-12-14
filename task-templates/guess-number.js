@@ -306,9 +306,6 @@ async function createAssignment(task, assignment, params, global) {
   }
 }
 
-async function postAssignmentData(assignment, params, global) {}
-async function getAssignmentData(assignment, params, global) {}
-
 /**
  * 这个函数是作业状态更改的钩子，确保作业的状态发生更改，可能的更改包括订阅者从编辑到提交，同时作业必须为valid，
  * 以及发布者从提交到接受或拒绝。assignment会被保存。
@@ -342,6 +339,9 @@ async function assignmentStatusChanged(assignment, params, global) {
       assignment.status = assignments.statusEnum.ADMITTED;
   }
 }
+
+async function postAssignmentData(assignment, params, global) {}
+async function getAssignmentData(assignment, params, global) {}
 
 module.exports = {
   meta: {

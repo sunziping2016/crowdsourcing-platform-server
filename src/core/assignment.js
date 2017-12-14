@@ -169,7 +169,26 @@ async function patchAssignment(params, global) {
       ? assignment.toPlainObject(params.auth) : assignment._id
   });
 }
-async function findAssignment(params, global) {}
+
+/**
+ * 搜索作业。只有发布者或订阅者可以使用。
+ *  - ajax: GET /api/assignment
+ *  - socket.io: emit assignment:find
+ * @param params 请求数据
+ *   - auth {object} 权限
+ *   - query {object} 请求的query
+ *     - populate {boolean} 是否展开数据
+ *     - count {boolean} 统计总数，需要额外的开销
+ *     - filter {Object.<string, string|Array<string>>}
+ *         - search {string} 全文检索
+ *     - limit {number} 可选，小于等于50大于0数字，默认为10
+ *     - lastId {string} 可选，请求的上一个Id
+ * @param global
+ * @return {Promise<object>}
+ */
+async function findAssignment(params, global) {
+
+}
 
 /**
  * 删除作业。必须是任务的订阅者或者任务的提交者。

@@ -142,8 +142,6 @@ const findTaskSchema = ajv.compile({
       properties: {
         search: {type: 'string'},
         name: {type: 'string', minLength: 1},
-        description: {type: 'string', minLength: 1},
-        excerption: {type: 'string', minLength: 1},
         publisher: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
         tag: {type: 'string', minLength: 1},
         type: {type: 'string'},
@@ -178,8 +176,6 @@ const findTaskSchema = ajv.compile({
  *     - filter {Object.<string, string|Array<string>>}
  *         - search {string} 全文检索
  *         - name {string}
- *         - description {string}
- *         - excerption {string}
  *         - publisher {string} 对于发布者，这个值只能是自己。必须拥有TASK_ADMIN权限
  *           才能设置别的值，考虑对于同时有两权限的用户的请求一致性，建议以发布者身份搜索时永远设置这个值，
  *           以普通用户身份搜索时，请不要附带权限信息。
