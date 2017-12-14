@@ -210,60 +210,60 @@ async function findTask(params, global) {
     coreAssert(limit > 0 && limit < 50, errorsEnum.SCHEMA, 'Invalid limit');
   } else
     limit = 10;
+  params.query.filter = params.query.filter || {};
   const and = params.query.filter.$and = [];
-  if (params.query.filter !== undefined) {
-    if (params.query.filter.search !== undefined) {
-      const search = params.query.filter.search
-        .split(/\s+/).filter(x => x)
-        .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'i'));
-      delete params.query.filter.search;
-      if (search.length !== 0) {
-        const or = [];
-        search.forEach(x => {
-          or.push({name: {$regex: x}});
-          or.push({description: {$regex: x}});
-          or.push({excerption: {$regex: x}});
-        });
-        and.push({$or: or});
-      }
+  if (params.query.filter.search !== undefined) {
+    const search = params.query.filter.search
+      .split(/\s+/).filter(x => x)
+      .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'i'));
+    delete params.query.filter.search;
+    if (search.length !== 0) {
+      const or = [];
+      search.forEach(x => {
+        or.push({name: {$regex: x}});
+        or.push({description: {$regex: x}});
+        or.push({excerption: {$regex: x}});
+      });
+      and.push({$or: or});
     }
-    if (params.query.valid !== undefined)
-      params.query.valid = params.query.valid === 'true';
-    if (params.query.filter.tag !== undefined) {
-      params.query.filter.tags = params.query.filter.tag;
-      delete params.query.filter.tag;
-    }
-    if (params.query.filter.deadline !== undefined) {
-      const from = params.query.filter.deadline.from;
-      const to = params.query.filter.deadline.to;
-      delete params.query.filter.deadline;
-      if (from !== undefined && to !== undefined)
-        params.query.filter.deadline = {$gte: new Date(from), $lte: new Date(to)};
-      else if (to !== undefined)
-        params.query.filter.deadline = {$lte: new Date(to)};
-      else if (from !== undefined) {
-        const or = [];
-        or.push({deadline: {$exists: false}});
-        or.push({deadline: {$gte: new Date(from)}});
-        and.push({$or: or});
-      }
-    }
-    if (params.query.filter.status !== undefined)
-      params.query.filter.status = tasks.statusEnum[params.query.filter.status];
-    if (params.query.filter.completed !== undefined) {
-      const completed = params.query.filter.completed === 'true';
-      delete params.query.filter.completed;
-      if (completed)
-        params.query.filter.remain = {$lte: 0};
-      else {
-        const or = [];
-        or.push({remain: {$exists: false}});
-        or.push({remain: {$gt: 0}});
-        and.push({$or: or});
-      }
-    }
-  } else
-    params.query.filter = {};
+  }
+  if (params.query.valid !== undefined)
+    params.query.valid = params.query.valid === 'true';
+  if (params.query.filter.tag !== undefined) {
+    params.query.filter.tags = params.query.filter.tag;
+    delete params.query.filter.tag;
+  }
+  if (params.query.filter.deadline !== undefined) {
+    const from = params.query.filter.deadline.from;
+    const to = params.query.filter.deadline.to;
+    delete params.query.filter.deadline;
+    if (from !== undefined && to !== undefined)
+      params.query.filter.deadline = {$gte: new Date(from), $lte: new Date(to)};
+    else if (to !== undefined)
+      params.query.filter.deadline = {$lte: new Date(to)};
+    else if (from !== undefined)
+      and.push({
+        $or: [
+          {deadline: {$exists: false}},
+          {deadline: {$gte: new Date(from)}}
+        ]
+      });
+  }
+  if (params.query.filter.status !== undefined)
+    params.query.filter.status = tasks.statusEnum[params.query.filter.status];
+  if (params.query.filter.completed !== undefined) {
+    const completed = params.query.filter.completed === 'true';
+    delete params.query.filter.completed;
+    if (completed)
+      params.query.filter.remain = {$lte: 0};
+    else
+      and.push({
+        $or: [
+          {remain: {$exists: false}},
+          {remain: {$gt: 0}}
+        ]
+      });
+  }
   if (role === 1) {
     if (params.query.filter.publisher !== undefined)
       coreAssert(params.query.filter.publisher === params.auth.uid,

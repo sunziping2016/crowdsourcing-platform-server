@@ -170,6 +170,30 @@ async function patchAssignment(params, global) {
   });
 }
 
+const findAssignmentSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    populate: {type: 'string', enum: ['false', 'true']},
+    count: {type: 'string', enum: ['false', 'true']},
+    filter: {
+      type: 'object',
+      properties: {
+        search: {type: 'string'},
+        task: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+        publisher: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+        subscriber: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+        type: {type: 'string', pattern: '^[-_a-zA-Z\\d]+$'},
+        status: {type: 'string', enum: ['EDITING', 'SUBMITTED', 'ADMITTED', 'REJECTED']},
+        valid: {type: 'string', enum: ['true', 'false']}
+      },
+      additionalProperties: false
+    },
+    limit: {type: 'string', pattern: '^\\d+$'},
+    lastId: {type: 'string', pattern: '[a-fA-F\\d]{24}'}
+  },
+  additionalProperties: false
+});
+
 /**
  * 搜索作业。只有发布者或订阅者可以使用。
  *  - ajax: GET /api/assignment
@@ -179,15 +203,113 @@ async function patchAssignment(params, global) {
  *   - query {object} 请求的query
  *     - populate {boolean} 是否展开数据
  *     - count {boolean} 统计总数，需要额外的开销
- *     - filter {Object.<string, string|Array<string>>}
+ *     - filter {Object.<string, string>}
  *         - search {string} 全文检索
+ *         - task {string}
+ *         - publisher {string} 对于发布者，这个值只能是自己，建议以发布者身份搜索时永远设置这个值。
+ *         - subscriber {string} 对于订阅者，这个值只能是自己，建议以订阅者身份搜索时永远设置这个值。
+ *         - type {string}
+ *         - status {string}
+ *         - valid {boolean}
  *     - limit {number} 可选，小于等于50大于0数字，默认为10
  *     - lastId {string} 可选，请求的上一个Id
  * @param global
  * @return {Promise<object>}
  */
 async function findAssignment(params, global) {
-
+  const {assignments, users} = global;
+  coreValidate(findAssignmentSchema, params.query);
+  coreAssert(params.auth && (params.auth.role & (users.roleEnum.SUBSCRIBER | users.roleEnum.PUBLISHER)),
+    errorsEnum.PERMISSION, 'Permission denied');
+  const isSubscriber = !!(params.auth.role & users.roleEnum.SUBSCRIBER);
+  const isPublisher = !!(params.auth.role & users.roleEnum.PUBLISHER);
+  let limit;
+  if (params.query.limit !== undefined) {
+    limit = parseInt(params.query.limit);
+    coreAssert(limit > 0 && limit < 50, errorsEnum.SCHEMA, 'Invalid limit');
+  } else
+    limit = 10;
+  params.query.filter = params.query.filter || {};
+  const and = params.query.filter.$and = [];
+  if (params.query.filter.search !== undefined) {
+    const search = params.query.filter.search
+      .split(/\s+/).filter(x => x)
+      .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'i'));
+    delete params.query.filter.search;
+    if (search.length !== 0) {
+      const or = [];
+      search.forEach(x => {
+        or.push({summary: {$regex: x}});
+      });
+      and.push({$or: or});
+    }
+  }
+  if (params.query.valid !== undefined)
+    params.query.valid = params.query.valid === 'true';
+  if (params.query.filter.status !== undefined)
+    params.query.filter.status = assignments.statusEnum[params.query.filter.status];
+  if (isPublisher && isSubscriber) {
+    const setSubscriber = params.query.filter.subscriber !== undefined;
+    const setPublisher = params.query.filter.publisher !== undefined;
+    if (setSubscriber && setPublisher)
+      coreAssert(params.query.filter.subscriber === params.auth.uid ||
+        params.query.filter.publisher === params.auth.uid,
+        // eslint-disable-next-line
+        errorsEnum.SCHEMA, 'Invalid subscriber or publisher');
+    else if (setSubscriber) {
+      if (params.query.filter.subscriber !== params.auth.uid)
+        params.query.filter.publisher = params.auth.uid;
+    } else if (setPublisher) {
+      if (params.query.filter.publisher !== params.auth.uid)
+        params.query.filter.subscriber = params.auth.uid;
+    } else
+      and.push({
+        $or: [
+          {subscriber: params.auth.uid},
+          {publisher: params.auth.uid}
+        ]
+      });
+  } else if (isPublisher) {
+    coreAssert(params.query.filter.publisher === undefined ||
+      params.query.filter.publisher === params.auth.uid,
+      // eslint-disable-next-line
+      errorsEnum.INVALID, 'Invalid publisher');
+    params.query.filter.publisher = params.auth.uid;
+  } else {
+    coreAssert(params.query.filter.subscriber === undefined ||
+      params.query.filter.subscriber === params.auth.uid,
+      // eslint-disable-next-line
+      errorsEnum.INVALID, 'Invalid subscriber');
+    params.query.filter.subscriber = params.auth.uid;
+  }
+  if (params.query.filter.$and.length === 0)
+    delete params.query.filter.$and;
+  const result = {};
+  if (params.query.lastId !== undefined) {
+    params.query.filter._id = {$gt: params.query.lastId};
+    result.lastId = params.query.lastId;
+  }
+  if (params.query.populate === 'true') {
+    result.data = (await assignments.find(params.query.filter)
+      .notDeleted()
+      .sort({_id: 1})
+      .limit(limit)).map(x => x.toPlainObject(params.auth));
+    if (result.data.length !== 0)
+      result.lastId = result.data[result.data.length - 1]._id;
+  } else {
+    result.data = (await assignments.find(params.query.filter)
+      .notDeleted()
+      .sort({_id: 1})
+      .select({_id: 1})
+      .limit(limit)).map(x => x._id);
+    if (result.data.length !== 0)
+      result.lastId = result.data[result.data.length - 1];
+  }
+  if (params.query.count === 'true') {
+    delete params.query.filter._id;
+    result.total = await assignments.count(params.query.filter).notDeleted();
+  }
+  return coreOkay({data: result});
 }
 
 /**
