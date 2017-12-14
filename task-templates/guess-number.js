@@ -168,10 +168,11 @@ async function postTaskData(task, params, global) {
  * 如果这个函数没有返回值，则会依据情况调用postTaskDataSchema。如果有返回值则会作为响应。
  *
  * 对于本任务，如果不是发布者，就采用默认的调用taskDataToPlainObject。如果是订阅者且`PUBLISHED`，
- * 还会返回以下几个字段：
+ * 还会返回在`userStatus`内返回以下几个字段：
  *   - signed：用户是否已经注册，对于noSignup的任务而言，这永远为真
  *   - blocked：用户是否被拒绝参加改任务，对于noSignup或signupMultipleTimes的任务而言，这永远为假
  *   - signing：对于非signed用户而言，这个属性表示用户是否正在报名
+ *   - created：对于任务非submitMultipleTimes且用户signed，表示是否已经创建了一个作业
  * @param task {object} 任务对象
  * @param params {object}
  * @param global {object}
@@ -181,26 +182,32 @@ async function getTaskData(task, params, global) {
   const {users, tasks, assignments} = global;
   if (params.auth && (params.auth.role & users.roleEnum.SUBSCRIBER) &&
     task.status === tasks.statusEnum.PUBLISHED) {
-    const result = taskDataToPlainObject(task, params.auth);
+    const userStatus = {};
     if (task.data.noSignup) {
-      result.signed = true;
-      result.blocked = false;
+      userStatus.signed = true;
+      userStatus.blocked = false;
     } else {
-      result.signed = task.data.signedUsers.indexOf(params.auth.uid) !== -1;
-      if (result.signed === false)
-        result.signing = (await assignments.findOne({
+      userStatus.signed = task.data.signedUsers.indexOf(params.auth.uid) !== -1;
+      if (userStatus.signed === false)
+        userStatus.signing = (await assignments.findOne({
           task: task._id,
           subscriber: params.auth.uid,
           status: assignments.statusEnum.SUBMITTED,
           'data.signup': true
         }).notDeleted()) !== null;
       if (task.data.signupMultipleTimes)
-        result.blocked = false;
+        userStatus.blocked = false;
       else
-        result.blocked = task.data.blockedUsers.indexOf(params.auth.uid) !== -1;
+        userStatus.blocked = task.data.blockedUsers.indexOf(params.auth.uid) !== -1;
     }
+    if (userStatus.signed && !task.data.submitMultipleTimes)
+      userStatus.created = (await assignments.findOne({
+        task: task._id,
+        subscriber: params.auth.uid,
+        'data.signup': {$ne: true}
+      }).notDeleted()) !== null;
     return coreOkay({
-      data: result
+      data: Object.assign({userStatus}, taskDataToPlainObject(task, params.auth))
     });
   }
 }
@@ -238,9 +245,9 @@ const createAssignmentSchema = ajv.compile({
 /**
  * 创建任务，这里已经确保提交者为订阅者，且任务处于`PUBLISHED`状态。原则上，这个过程结束后，
  * 应当设置好`valid`、`status`、`summary`、`data`的字段。如果该函数缺省，则会创建一个
- * 不valid、编辑状态、无`summary`和`data`字段的任务。
+ * 不valid、编辑状态、无`summary`和`data`字段的任务。assignment会被保存。
  *
- * 如果这个函数没有返回值，则会保存assignment并依据情况调用assignmentDataToPlainObject。
+ * 如果这个函数没有返回值，则依据情况调用assignmentDataToPlainObject。
  * 如果有返回值则会作为响应。
  *
  * 对于本任务而言，主要确认创建的是一个报名作业还是真正的猜数字作业。
@@ -285,6 +292,11 @@ async function createAssignment(task, assignment, params, global) {
   } else {
     coreAssert(task.data.noSignup || task.data.signedUsers.indexOf(params.auth.uid) !== -1,
       errorsEnum.INVALID, 'User has not signed up');
+    coreAssert(task.data.submitMultipleTimes || (await assignments.findOne({
+      task: task._id,
+      subscriber: params.auth.uid,
+      'data.signup': {$ne: true}
+    }).notDeleted()) === null, errorsEnum.INVALID, 'User has already created an assignment');
     assignment.summary = '未完成，已猜测0次';
     assignment.data = {
       guessTimes: 0,
@@ -297,7 +309,39 @@ async function createAssignment(task, assignment, params, global) {
 async function postAssignmentData(assignment, params, global) {}
 async function getAssignmentData(assignment, params, global) {}
 
-async function changeAssignmentStatus(assignment, status, params, global) {}
+/**
+ * 这个函数是作业状态更改的钩子，确保作业的状态发生更改，可能的更改包括订阅者从编辑到提交，同时作业必须为valid，
+ * 以及发布者从提交到接受或拒绝。assignment会被保存。
+ *
+ * 本任务主要是处理自动pass和验证通过的逻辑的。
+ *
+ * @param assignment {object}
+ * @param params
+ * @param global
+ * @return {Promise<void>}
+ */
+async function assignmentStatusChanged(assignment, params, global) {
+  if (assignment.data.signup) {
+    const {tasks, assignments} = global;
+    const task = await tasks.findById(assignment.task).notDeleted().select('+data');
+    coreAssert(task, errorsEnum.INVALID, 'Task deleted');
+    if (assignment.status === assignments.statusEnum.ADMITTED) {
+      task.data.signedUsers.push(assignment.subscriber.toString());
+      task.markModified('data.signedUsers');
+      await task.save();
+    } else if (!task.data.signupMultipleTimes) {
+      task.data.blockedUsers.push(assignment.subscriber.toString());
+      task.markModified('data.signedUsers');
+      await task.save();
+    }
+  } else {
+    const {tasks, assignments} = global;
+    const task = await tasks.findById(assignment.task).notDeleted().select('+data');
+    coreAssert(task, errorsEnum.INVALID, 'Task deleted');
+    if (task.data.submitAutoPass && assignment.status === assignments.statusEnum.SUBMITTED)
+      assignment.status = assignments.statusEnum.ADMITTED;
+  }
+}
 
 module.exports = {
   meta: {
@@ -313,5 +357,5 @@ module.exports = {
   createAssignment,
   postAssignmentData,
   getAssignmentData,
-  changeAssignmentStatus
+  assignmentStatusChanged
 };

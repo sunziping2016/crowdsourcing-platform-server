@@ -8,18 +8,18 @@ const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('./errors');
 
 const idRegex = /^[a-f\d]{24}$/i;
 
-const queryWithDataSchema = ajv.compile({
+const querySchema = ajv.compile({
   type: 'object',
   properties: {
-    populate: {type: 'string', enum: ['false', 'true']},
-    data: {type: 'string', enum: ['false', 'true']}
+    populate: {type: 'string', enum: ['false', 'true']}
   },
   additionalProperties: false
 });
 
-const dataSchema = ajv.compile({
+const queryWithDataSchema = ajv.compile({
   type: 'object',
   properties: {
+    populate: {type: 'string', enum: ['false', 'true']},
     data: {type: 'string', enum: ['false', 'true']}
   },
   additionalProperties: false
@@ -37,7 +37,8 @@ const createAssignmentSchema = ajv.compile({
 
 /**
  * 创建任务，用户必须具有subscriber权限。
- *
+ *  - ajax: POST /api/assignment
+ *  - socket.io: emit assignment:create
  * @param params {object}
  *   - query {object}
  *     - populate {boolean} 是否返回
@@ -75,9 +76,9 @@ async function createAssignment(params, global) {
       return data;
   }
   await assignment.save();
-  if (params.query.populate) {
+  if (params.query.populate === 'true') {
     const data = assignment.toPlainObject(params.auth);
-    if (params.query.data)
+    if (params.query.data === 'true')
       data.data = (typeof taskType.assignmentDataToPlainObject === 'function' &&
         taskType.assignmentDataToPlainObject(assignment, params.auth)) || {};
     return coreOkay({
@@ -86,10 +87,107 @@ async function createAssignment(params, global) {
   }
   return coreOkay({data: assignment._id});
 }
-async function getAssignment(params, global) {}
-async function patchAssignment(params, global) {}
+
+/**
+ * 获取作业详情。
+ *  - ajax: GET /api/assignment/:id
+ *  - socket.io: emit assignment:get
+ * @param params params {object}
+ *  - auth {object} 权限
+ *  - id {string} 要获取详情的作业的id
+ * @param global
+ * @return {Promise<object>}
+ */
+async function getAssignment(params, global) {
+  const {assignments} = global;
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted();
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(params.auth && (assignment.publisher.equals(params.auth.uid) ||
+    assignment.subscriber.equals(params.auth.uid)),
+    // eslint-disable-next-line
+    errorsEnum.PERMISSION, 'Permission denied'
+  );
+  return coreOkay({
+    data: assignment.toPlainObject(params.auth)
+  });
+}
+
+const patchAssignmentSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    status: {type: 'string', enum: ['SUBMITTED', 'ADMITTED', 'REJECTED']}
+  },
+  additionalProperties: false
+});
+
+/**
+ * 更改作业的状态，可能的更改包括订阅者从编辑到提交（作业必须为valid）和发布者从提交到接受或拒绝
+ *  - ajax: PATCH /api/assignment/:id
+ *  - socket.io: emit assignment:patch
+ * @param params {object} 请求的数据
+ *   - query {object} 请求的query
+ *     - populate {boolean}
+ *   - data {object} 请求的status
+ *     - status {string} 可选，状态
+ * @param global {object}
+ * @return {Promise<object>}
+ */
+async function patchAssignment(params, global) {
+  const {assignments, taskTemplates} = global;
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  coreValidate(querySchema, params.query);
+  coreValidate(patchAssignmentSchema, params.data);
+  if (params.data.status !== undefined)
+    params.data.status = assignments.statusEnum[params.data.status];
+  const assignment = await assignments.findById(params.id).notDeleted().select('+data');
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(taskTemplates[assignment.type] !== undefined &&
+    taskTemplates[assignment.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  const taskType = taskTemplates[assignment.type];
+  const isPublisher = params.auth && assignment.publisher.equals(params.auth.uid);
+  const isSubscriber = params.auth && assignment.subscriber.equals(params.auth.uid);
+  coreAssert(isPublisher || isSubscriber, errorsEnum.PERMISSION, 'Permission denied');
+  coreAssert(params.data.status !== assignments.statusEnum.SUBMITTED ||
+    (isSubscriber && assignment.status === assignments.statusEnum.EDITING && assignment.valid),
+    // eslint-disable-next-line indent
+    errorsEnum.INVALID, 'Invalid status'
+  );
+  coreAssert((params.data.status !== assignments.statusEnum.ADMITTED &&
+    params.data.status !== assignments.statusEnum.REJECTED) ||
+    (isPublisher && assignment.status === assignments.statusEnum.SUBMITTED),
+    // eslint-disable-next-line indent
+    errorsEnum.INVALID, 'Invalid status'
+  );
+  const oldStatus = assignment.status;
+  Object.assign(assignment, params.data);
+  if (assignment.status !== oldStatus && typeof taskType.assignmentStatusChanged === 'function')
+    await taskType.assignmentStatusChanged(assignment, params, global);
+  await assignment.save();
+  return coreOkay({
+    data: params.query.populate === 'true'
+      ? assignment.toPlainObject(params.auth) : assignment._id
+  });
+}
 async function findAssignment(params, global) {}
-async function deleteAssignment(params, global) {}
+
+/**
+ * 删除作业。必须是任务的订阅者或者任务的提交者。
+ * @param params
+ * @param global
+ * @return {Promise<void>}
+ */
+async function deleteAssignment(params, global) {
+  const {assignments} = global;
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted();
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  const isPublisher = params.auth && assignment.publisher.equals(params.auth.uid);
+  const isSubscriber = params.auth && assignment.subscriber.equals(params.auth.uid);
+  coreAssert(isPublisher || isSubscriber, errorsEnum.PERMISSION, 'Permission denied');
+  await assignment.delete();
+  return coreOkay();
+}
 
 async function postAssignmentData(ctx) {}
 async function getAssignmentData(ctx) {}

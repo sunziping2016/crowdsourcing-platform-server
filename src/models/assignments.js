@@ -71,12 +71,11 @@ module.exports = function (global) {
   /**
    * 按照请求者的权限，转换成对应的对象。
    * @param auth {object} 可选，权限信息，包含uid和role
-   * 那就是权限。
    * @return {object} 对象
    * @function module:models/assignments~Assignment#toPlainObject
    */
   assignmentSchema.methods.toPlainObject = function (auth) {
-    return {
+    const result = {
       _id: this._id.toString(),
       task: this.task.toString(),
       publisher: this.publisher.toString(),
@@ -84,8 +83,12 @@ module.exports = function (global) {
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      valid: this.valid
     };
+    if (this.summary)
+      result.summary = this.summary;
+    return result;
   };
 
   return db.model('assignments', assignmentSchema);

@@ -112,9 +112,9 @@ async function createTask(params, global) {
  * @param params {object}
  *  - auth {object} 权限
  *  - id {string} 要获取详情的任务的id
- * @param global {object}`
+ * @param global {object}
  *  - tasks {object} Tasks model
- * @return {Promise.<object>}
+ * @return {Promise<object>}
  */
 async function getTask(params, global) {
   const {tasks, users} = global;
@@ -127,7 +127,6 @@ async function getTask(params, global) {
       params.auth.role & users.roleEnum.TASK_ADMIN)),
     errorsEnum.PERMISSION, 'Permission denied'
   );
-  coreAssert(task, errorsEnum.INVALID, 'Task not found.');
   return coreOkay({
     data: task.toPlainObject(params.auth)
   });

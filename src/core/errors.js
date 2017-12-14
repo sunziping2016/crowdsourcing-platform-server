@@ -44,7 +44,7 @@ function coreOkay(data) {
 
 function coreCreateError(error, data) {
   if (typeof data === 'string')
-    data = {message: data};
+    data = {message: data, code: error.code};
   const err = createError(error.code, data.message);
   data.type = error.type;
   err.data = data;
