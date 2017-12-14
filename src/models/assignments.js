@@ -34,10 +34,14 @@ module.exports = function (global) {
    *     - SUBMITTED：待审核
    *     - ADMITTED：已通过
    *     - REJECTED：已拒绝
-   *   - `data` 额外数据
+   *   - `valid`：是否合法
+   *   - `data`：额外数据
+   *   - `summary`：字符串，任务的简要概述
    *   - `createdAt`：创建时间，自动字段
    *   - `updatedAt`：更新时间，自动字段
    *   - `deleted` 是否被删除
+   *
+   * 其中的`summary`、`valid`和`data`交给特殊逻辑处理。
    * @class Assignment
    */
   const assignmentSchema = new mongoose.Schema({
@@ -46,7 +50,9 @@ module.exports = function (global) {
     subscriber: {type: mongoose.Schema.Types.ObjectId, required: true, index: true},
     type: {type: String, required: true},
     status: {type: Number, required: true},
+    valid: {type: Boolean, required: true},
     data: {type: mongoose.Schema.Types.Mixed, select: false},
+    summary: {type: String},
     createdAt: {type: Date},
     updatedAt: {type: Date},
     deleted: {type: Boolean, index: true}
@@ -65,12 +71,11 @@ module.exports = function (global) {
   /**
    * 按照请求者的权限，转换成对应的对象。
    * @param auth {object} 可选，权限信息，包含uid和role
-   * 那就是权限。
    * @return {object} 对象
    * @function module:models/assignments~Assignment#toPlainObject
    */
   assignmentSchema.methods.toPlainObject = function (auth) {
-    return {
+    const result = {
       _id: this._id.toString(),
       task: this.task.toString(),
       publisher: this.publisher.toString(),
@@ -78,8 +83,12 @@ module.exports = function (global) {
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      valid: this.valid
     };
+    if (this.summary)
+      result.summary = this.summary;
+    return result;
   };
 
   return db.model('assignments', assignmentSchema);

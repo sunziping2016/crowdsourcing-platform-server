@@ -61,7 +61,7 @@ module.exports = function (global) {
     createdAt: {type: Date},
     updatedAt: {type: Date},
     blocked: {type: Boolean, index: true},
-    roles: {type: Number, index: true},
+    roles: {type: Number, required: true, index: true},
     settings: {type: userSettingsSchema},
     deleted: {type: Boolean, index: true}
   });
