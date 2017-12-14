@@ -17,6 +17,14 @@ const querySchema = ajv.compile({
   additionalProperties: false
 });
 
+const dataSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    data: {type: 'string', enum: ['false', 'true']}
+  },
+  additionalProperties: false
+});
+
 const createTaskSchema = ajv.compile({
   type: 'object',
   required: ['name', 'description', 'excerption'],
@@ -112,6 +120,7 @@ async function getTask(params, global) {
   const {tasks, users} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const task = await tasks.findById(params.id).notDeleted();
+  coreAssert(task, errorsEnum.EXIST, 'Task does not exist');
   coreAssert(
     task.status === tasks.statusEnum.PUBLISHED ||
       (params.auth && (task.publisher.equals(params.auth.uid) ||
@@ -132,6 +141,7 @@ const findTaskSchema = ajv.compile({
     filter: {
       type: 'object',
       properties: {
+        search: {type: 'string'},
         name: {type: 'string'},
         description: {type: 'string'},
         excerption: {type: 'string'},
@@ -167,6 +177,7 @@ const findTaskSchema = ajv.compile({
  *     - populate {boolean} 是否展开数据
  *     - count {boolean} 统计总数，需要额外的开销
  *     - filter {Object.<string, string|Array<string>>}
+ *         - search {string} 全文检索
  *         - name {string}
  *         - description {string}
  *         - excerption {string}
@@ -178,7 +189,7 @@ const findTaskSchema = ajv.compile({
  *         - deadline {{from:string, to:string}} 某个时间范围，无deadline等价于deadline无穷
  *         - status 对于普通用户，这个值只能是`PUBLISHED`，而发布者和任务管理员可以设置别的值，
  *           同样考虑多种权限的用户的请求一致性，建议以普通用户搜索时永远设置这个值。
- *         - completed {boolean} 对于没有进度概念的（真的有这种任务？），会始终包含
+ *         - completed {boolean} 对于没有进度概念的，等价于永远未完成
  *     - limit {number} 可选，小于等于50大于0数字，默认为10
  *     - lastId {string} 可选，请求的上一个Id
  * @param global
@@ -203,6 +214,20 @@ async function findTask(params, global) {
   } else
     limit = 10;
   if (params.query.filter !== undefined) {
+    if (params.query.filter.search !== undefined) {
+      const search = params.query.filter.search
+        .split(/\s+/).filter(x => x)
+        .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'i'));
+      delete params.query.filter.search;
+      if (search.length !== 0) {
+        const or = params.query.filter.$or = params.query.filter.$or || [];
+        search.forEach(x => {
+          or.push({name: {$regex: x}});
+          or.push({description: {$regex: x}});
+          or.push({excerption: {$regex: x}});
+        });
+      }
+    }
     if (params.query.filter.tag !== undefined) {
       params.query.filter.tags = params.query.filter.tag;
       delete params.query.filter.tag;
@@ -402,46 +427,72 @@ async function deleteTask(params, global) {
   return coreOkay();
 }
 
+/**
+ * 上传任务数据，提交者必须为任务的发布者，且任务处于`EDITING`状态
+ * @param ctx {object} koa的context
+ *   - params {object} 请求的数据
+ *     - query {object} 请求的query
+ *       - data {boolean} 是否返回数据，默认false
+ * @return {Promise<void>}
+ */
 async function postTaskData(ctx) {
   const {params, global} = ctx;
   const {tasks, taskTemplates} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  coreValidate(dataSchema, params.query);
   const task = await tasks.findById(params.id).notDeleted().select('+data');
   coreAssert(task, errorsEnum.EXIST, 'Task does not exist');
-  coreAssert(task.type !== undefined || taskTemplates[task.type] === undefined,
-    errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(task.type !== undefined && taskTemplates[task.type] !== undefined &&
+    taskTemplates[task.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(params.auth && task.publisher.equals(params.auth.uid),
+    errorsEnum.PERMISSION, 'Requires publisher privilege');
+  coreAssert(task.status === tasks.statusEnum.EDITING,
+    errorsEnum.INVALID, 'Task is not at EDITING status');
   const taskType = taskTemplates[task.type];
   let data;
+  const next = async () => {
+    if (typeof taskType.postTaskData === 'function')
+      data = await taskType.postTaskData(task, params, global);
+  };
   if (typeof taskType.postTaskDataMiddleware === 'function')
-    await taskType.postTaskDataMiddleware(ctx, async () =>
-      data = taskType.postTaskData(task, params, global)
-    );
+    await taskType.postTaskDataMiddleware(ctx, next);
   else
-    data = taskType.postTaskData(task, params, global);
-  data = await data;
+    await next();
   if (data !== undefined)
     ctx.body = data;
+  else if (params.query.data === 'true')
+    ctx.body = coreOkay({
+      data: (typeof taskType.taskDataToPlainObject === 'function' &&
+        taskType.taskDataToPlainObject(task, params.auth)) || {}
+    });
+  else
+    ctx.body = coreOkay();
 }
 
 async function getTaskData(ctx) {
   const {params, global} = ctx;
-  const {tasks, taskTemplates} = global;
+  const {users, tasks, taskTemplates} = global;
   coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
   const task = await tasks.findById(params.id).notDeleted().select('+data');
   coreAssert(task, errorsEnum.EXIST, 'Task does not exist');
-  coreAssert(task.type !== undefined || taskTemplates[task.type] === undefined,
-    errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(task.type !== undefined && taskTemplates[task.type] !== undefined &&
+    taskTemplates[task.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(params.auth && (task.publisher.equals(params.auth.uid) ||
+    ((params.auth.role & users.roleEnum.SUBSCRIBER) &&
+      task.status === tasks.statusEnum.PUBLISHED)),
+    // eslint-disable-next-line
+    errorsEnum.PERMISSION, 'Permission denied');
   const taskType = taskTemplates[task.type];
   let data;
-  if (typeof taskType.getTaskDataMiddleware === 'function')
-    await taskType.getTaskDataMiddleware(ctx, async () =>
-      data = taskType.getTaskData(task, params, global)
-    );
-  else
-    data = taskType.getTaskData(task, params, global);
-  data = await data;
+  if (typeof taskType.getTaskData === 'function')
+    data = await taskType.getTaskData(task, params, global);
   if (data !== undefined)
     ctx.body = data;
+  else
+    ctx.body = coreOkay({
+      data: (typeof taskType.taskDataToPlainObject === 'function' &&
+        taskType.taskDataToPlainObject(task, params.auth)) || {}
+    });
 }
 
 module.exports = {

@@ -34,10 +34,14 @@ module.exports = function (global) {
    *     - SUBMITTED：待审核
    *     - ADMITTED：已通过
    *     - REJECTED：已拒绝
-   *   - `data` 额外数据
+   *   - `valid`：是否合法
+   *   - `data`：额外数据
+   *   - `summary`：字符串，任务的简要概述
    *   - `createdAt`：创建时间，自动字段
    *   - `updatedAt`：更新时间，自动字段
    *   - `deleted` 是否被删除
+   *
+   * 其中的`summary`、`valid`和`data`交给特殊逻辑处理。
    * @class Assignment
    */
   const assignmentSchema = new mongoose.Schema({
@@ -46,7 +50,9 @@ module.exports = function (global) {
     subscriber: {type: mongoose.Schema.Types.ObjectId, required: true, index: true},
     type: {type: String, required: true},
     status: {type: Number, required: true},
+    valid: {type: Boolean, required: true},
     data: {type: mongoose.Schema.Types.Mixed, select: false},
+    summary: {type: String},
     createdAt: {type: Date},
     updatedAt: {type: Date},
     deleted: {type: Boolean, index: true}
