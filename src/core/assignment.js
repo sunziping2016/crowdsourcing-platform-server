@@ -294,20 +294,20 @@ async function findAssignment(params, global) {
     delete params.query.filter.$and;
   const result = {};
   if (params.query.lastId !== undefined) {
-    params.query.filter._id = {$gt: params.query.lastId};
+    params.query.filter._id = {$lt: params.query.lastId};
     result.lastId = params.query.lastId;
   }
   if (params.query.populate === 'true') {
     result.data = (await assignments.find(params.query.filter)
       .notDeleted()
-      .sort({_id: 1})
+      .sort({_id: -1})
       .limit(limit)).map(x => x.toPlainObject(params.auth));
     if (result.data.length !== 0)
       result.lastId = result.data[result.data.length - 1]._id;
   } else {
     result.data = (await assignments.find(params.query.filter)
       .notDeleted()
-      .sort({_id: 1})
+      .sort({_id: -1})
       .select({_id: 1})
       .limit(limit)).map(x => x._id);
     if (result.data.length !== 0)
