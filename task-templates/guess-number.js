@@ -293,6 +293,10 @@ async function createAssignment(task, assignment, params, global) {
     assignment.data = {signup: true};
     assignment.markModified('data');
   } else {
+    coreAssert((task.total < 0 || task.remain > 0) &&
+      (task.deadline === false || Date.now() <= task.deadline.getTime()),
+      // eslint-disable-next-line
+      errorsEnum.INVALID, 'Task has completed');
     coreAssert(task.data.noSignup || task.data.signedUsers.indexOf(params.auth.uid) !== -1,
       errorsEnum.INVALID, 'User has not signed up');
     coreAssert(task.data.submitMultipleTimes || (await assignments.findOne({
@@ -340,6 +344,8 @@ async function assignmentStatusChanged(assignment, params, global) {
     coreAssert(task, errorsEnum.INVALID, 'Task deleted');
     if (task.data.submitAutoPass && assignment.status === assignments.statusEnum.SUBMITTED)
       assignment.status = assignments.statusEnum.ADMITTED;
+    if (task.total > 0 && assignment.status === assignments.statusEnum.ADMITTED)
+      await tasks.findOneAndUpdate({_id: task._id}, {$inc: {'task.remain': -1}}).notDeleted();
   }
 }
 
