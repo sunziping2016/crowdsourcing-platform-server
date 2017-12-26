@@ -150,7 +150,7 @@ async function postTaskData(task, params, global) {
     delete params.data.total;
   } else {
     task.total = -1;
-    delete task.remain;
+    task.remain = undefined;
   }
   if (!params.data.noSignup) {
     params.data.signedUsers = [];
