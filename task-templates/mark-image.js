@@ -217,7 +217,7 @@ async function getTaskData(task, params, global) {
  * 对本任务而言，只有作业是一个非报名作业才返回数据，如下：
  *   - sequence {number} 题号
  *   - finished {boolean} 是否完成
- *   - answer {number} 答案（完成之后才返回）
+ *   - answer {number} 答案
  * @param assignment {object}
  * @param auth {object}
  * @return {object}
@@ -226,9 +226,10 @@ function assignmentDataToPlainObject(assignment, auth) {
   if (!assignment.data || assignment.data.signup)
     return {};
   const result = {
-    sequence: assignment.data.sequence,
     finished: assignment.valid
   };
+  if (assignment.data.sequence !== undefined)
+    result.sequence = assignment.data.sequence;
   if (assignment.data.answer !== undefined)
     result.answer = assignment.data.answer;
   return result;
@@ -309,6 +310,7 @@ async function createAssignment(task, assignment, params, global) {
     };
     task.progress += 1;
     task.markModified('data');
+    await task.save();
     assignment.markModified('data');
   }
 }
@@ -396,6 +398,7 @@ async function postAssignmentData(assignment, params, global) {
   coreAssert(!assignment.valid, errorsEnum.INVALID, 'Assignment already finished');
   assignment.data.answr = params.data.answer;
   assignment.summary = '已完成';
+  assignment.valid = true;
   assignment.markModified('data');
   await assignment.save();
   return coreOkay({
