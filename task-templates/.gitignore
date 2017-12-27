@@ -3,3 +3,4 @@
 # Except this file
 !.gitignore
 !guess-number.js
+!mark-image.js
