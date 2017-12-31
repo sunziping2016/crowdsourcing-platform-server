@@ -18,5 +18,7 @@ module.exports = function (global) {
   router.get('/:id', coreToMiddleware(coreUser.getUser));
   router.patch('/:id', avtarMulter, coreToMiddleware(coreUser.patchUser));
   router.delete('/:id', coreToMiddleware(coreUser.deleteUser));
+  router.get('/:id/data', coreToMiddleware(coreUser.getUserData));
+  router.post('/:id/data', coreToMiddleware(coreUser.postUserData));
   return router;
 };
