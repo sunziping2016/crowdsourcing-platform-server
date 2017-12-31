@@ -98,7 +98,7 @@ const postTaskDataSchema = ajv.compile({
   properties: {
     question: {type: 'string'},
     choiceAmount: {type: 'integer', minimum: 1},
-    choices: {type: 'arrays', items: {type: 'string'}},
+    choices: {type: 'array', items: {type: 'string'}},
     total: {type: 'integer', minimum: 1, maximum: 100},
     submitMultipleTimes: {type: 'boolean'},
     signupMultipleTimes: {type: 'boolean'},

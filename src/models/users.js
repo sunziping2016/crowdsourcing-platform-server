@@ -26,9 +26,6 @@ const roleEnum = {
 module.exports = function (global) {
   const {config, db} = global;
 
-  const userSettingsSchema = new mongoose.Schema({
-  });
-
   /**
    * `users` schema对象，包含以下字段：
    *  - `username`：字符串，必要，未删除用户应当唯一
@@ -46,7 +43,7 @@ module.exports = function (global) {
    *    - TASK_ADMIN：可以管理活动
    *    - USER_ADMIN：可以管理用户
    *    - SITE_ADMIN：可以管理网站
-   *  - `settings`：用户自定义的设置
+   *  - `data`：用户自定义的设置
    *  - `deleted`：布尔，是否被删除，索引
    *  @class User
    */
@@ -62,7 +59,7 @@ module.exports = function (global) {
     updatedAt: {type: Date},
     blocked: {type: Boolean, index: true},
     roles: {type: Number, required: true, index: true},
-    settings: {type: userSettingsSchema},
+    data: {type: mongoose.Schema.Types.Mixed, select: false},
     deleted: {type: Boolean, index: true}
   });
 
@@ -142,10 +139,6 @@ module.exports = function (global) {
         result.email = this.email;
       if (this.wechatId !== undefined)
         result.wechatId = this.wechatId;
-    }
-    if (isSelf) {
-      if (this.settings !== undefined)
-        result.settings = {};
     }
     return result;
   };

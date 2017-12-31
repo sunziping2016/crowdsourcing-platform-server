@@ -249,8 +249,8 @@ async function patchUser(params, global) {
   const isSelf = params.auth && params.auth.uid === params.id;
   const isUserAdmin = params.auth && (params.auth.role & users.roleEnum.USER_ADMIN);
   coreAssert(isSelf || isUserAdmin, errorsEnum.PERMISSION, 'Permission denied');
-  coreAssert((params.data.password === undefined && params.data.settings === undefined &&
-    params.file === undefined) || isSelf, errorsEnum.PERMISSION, 'Requires self privilege');
+  coreAssert((params.data.password === undefined && params.file === undefined) || isSelf,
+    errorsEnum.PERMISSION, 'Requires self privilege');
   coreAssert((params.data.blocked === undefined && params.data.roles === undefined) ||
     isUserAdmin, errorsEnum.PERMISSION, 'Requires user admin privilege');
   const user = await users.findById(params.id).notDeleted();
@@ -283,8 +283,6 @@ async function patchUser(params, global) {
   }
   if (refreshJWT)
     await jwt.revoke(params.id);
-  if (params.data.settings)
-    Object.assign(user.settings, params.data.settings);
   await user.save();
   return coreOkay({
     data: params.query.populate === 'true'
@@ -298,7 +296,7 @@ async function patchUser(params, global) {
  *   - socket.io: emit user:delete
  * @param params 请求数据
  *   - auth {object} 权限
- *   - id {string} 要获取的用户信息
+ *   - id {string} 用户的ID
  * @param global
  * @return {Promise<object>}
  */
@@ -314,10 +312,78 @@ async function deleteUser(params, global) {
   return coreOkay();
 }
 
+/**
+ * 获取某个用户的个人数据，必须是该用户本人。通过以下两种方式暴露
+ *   - ajax: GET /api/user/:id/data
+ *   - socket.io: emit user:getData
+ * @param params 请求数据
+ *   - auth {object} 权限
+ *   - id {string} 用户的ID
+ * @param global
+ * @return {Promise<object>}
+ */
+async function getUserData(params, global) {
+  const {users} = global;
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  coreAssert(params.auth && params.auth.uid === params.id,
+    errorsEnum.PERMISSION, 'Permission denied');
+  const user = await users.findById(params.id).notDeleted().select('+data');
+  coreAssert(user, errorsEnum.EXIST, 'User does not exist');
+  return coreOkay({
+    data: user.data || {}
+  });
+}
+
+const postUserDataSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    history: {
+      type: 'array',
+      items: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+      maxItems: 50
+    },
+    favorites: {
+      type: 'array',
+      items: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+      maxItems: 50
+    }
+  },
+  additionalProperties: false
+});
+
+/**
+ * 设置某个用户的个人数据，必须是该用户本人。通过以下两种方式暴露
+ *   - ajax: POST /api/user/:id/data
+ *   - socket.io: emit user:setData
+ * @param params 请求数据
+ *   - auth {object} 权限
+ *   - id {string} 用户的ID
+ *   - data {object} 请求的data
+ *     - history {string[]} 看过的历史，最多50条
+ *     - favorites {string[]} 喜爱的，最多50条
+ * @param global
+ * @return {Promise<object>}
+ */
+async function postUserData(params, global) {
+  const {users} = global;
+  coreAssert(params.id && idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  coreAssert(params.auth && params.auth.uid === params.id,
+    errorsEnum.PERMISSION, 'Permission denied');
+  coreValidate(postUserDataSchema, params.data);
+  const user = await users.findById(params.id).notDeleted().select('+data');
+  coreAssert(user, errorsEnum.EXIST, 'User does not exist');
+  user.data = params.data;
+  user.markModified('data');
+  await user.save();
+  return coreOkay();
+}
+
 module.exports = {
   createUser,
   getUser,
   findUser,
   patchUser,
-  deleteUser
+  deleteUser,
+  getUserData,
+  postUserData
 };
