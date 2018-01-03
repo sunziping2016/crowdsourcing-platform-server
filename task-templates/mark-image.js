@@ -8,6 +8,7 @@
  *   - choiceAmount {number} 问题的选项数量
  *   - choices {string[]} 问题的各个选项
  *   - progress {number} 当前的委派进度，每创建一个作业加一
+ *   - images {string[]} 解压后的数据的文件名，在dir下
  *   - submitMultipleTimes {boolean} 可选设置，是否允许一个人参与多次，默认false
  *   - signupMultipleTimes {boolean} 可选设置，是否允许一个人被拒后再次报名，默认false
  *   - noSignup {boolean} 可选设置，是否自动完成报名的步骤（即无需报名），默认false
@@ -26,9 +27,11 @@ const ajv = new (require('ajv'))();
 const path = require('path');
 const logger = require('winston');
 const fs = require('fs');
-const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('../src/core/errors');
+const {errorsEnum, coreOkay, coreThrow, coreValidate, coreAssert} = require('../src/core/errors');
 const {randomAlnumString, promisify} = require('../src/utils');
 const rimraf = require('rimraf');
+const extract = require('extract-zip');
+const multer = require('./multer');
 
 const exportedFilename = 'result.csv';
 
@@ -54,6 +57,8 @@ function taskDataToPlainObject(task, auth) {
       result.data.choices = task.data.choices;
     if (task.data.progress !== undefined)
       result.data.progress = task.data.progress;
+    if (task.data.images !== undefined)
+      result.data.images = task.data.images;
     if (task.data.submitMultipleTimes !== undefined)
       result.submitMultipleTimes = task.data.submitMultipleTimes;
     if (task.data.signupMultipleTimes !== undefined)
@@ -83,12 +88,41 @@ function cleanFiles(task, dir) {
 /**
  * 这是postTaskData AJAX请求执行之前的中间件。通常这里用以处理文件上传的multipart请求。缺省
  * 情况下直接调用postTaskData。
+ * 此任务中将上传的压缩包解压至该项目文件夹下。
  *
  * @param ctx {object}
  * @param next {function}
  * @return {Promise<void>}
  */
 async function postTaskDataMiddleware(ctx, next) {
+  /*
+  multer({
+    destination: ctx.global.config['temp-dir'],
+    types: ['application/zip', 'application/x-rar-compressed'],
+  }).single('data');
+  */
+  const {params, global} = ctx;
+  const {tasks} = global;
+  const task = await tasks.findById(params.id).notDeleted().select('+data');
+  if (params.file) {
+    try {
+      await extract(path.join(global.config['temp-dir'], params.file.filename),
+        task.data.dir
+      );
+    } catch (err) {
+      coreThrow(err, 'failed extracting zip');
+    }
+    let files;
+    try {
+      files = await fs.readdir(task.data.dir);
+    } catch (err) {
+      coreThrow(err, 'failed reading images names');
+    }
+    coreAssert(files.length === task.total, errorsEnum.INVALID, 'images amount not matching task\'s total');
+    files.forEach(file => {
+      task.data.images.push(file);
+    });
+  }
   await next();
 }
 
@@ -218,6 +252,7 @@ async function getTaskData(task, params, global) {
  *   - sequence {number} 题号
  *   - finished {boolean} 是否完成
  *   - answer {number} 答案
+ *   - image {string} 图片名，在task.data.dir下
  * @param assignment {object}
  * @param auth {object}
  * @return {object}
@@ -226,10 +261,9 @@ function assignmentDataToPlainObject(assignment, auth) {
   if (!assignment.data || assignment.data.signup)
     return {};
   const result = {
-    finished: assignment.valid
+    finished: assignment.valid,
+    sequence: assignment.data.sequence
   };
-  if (assignment.data.sequence !== undefined)
-    result.sequence = assignment.data.sequence;
   if (assignment.data.answer !== undefined)
     result.answer = assignment.data.answer;
   return result;
@@ -308,6 +342,8 @@ async function createAssignment(task, assignment, params, global) {
       sequence: task.progress + 1,
       answer: undefined
     };
+    if (task.images !== undefined)
+      assignment.image = task.images[task.progress];
     task.progress += 1;
     task.markModified('data');
     await task.save();
