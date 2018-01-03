@@ -1,6 +1,6 @@
 const assert = require('assert');
 const {startServer, stopServer, clearRedis, clearDBs,
-  createUsers, createJwts} = require('../helper');
+  createUsers, createJwts, filterObjectField} = require('../helper');
 
 const userData = [
   {username: 'foo', password: '12345678', roles: 0b11}
@@ -40,8 +40,68 @@ describe('Task API test', () => {
   });
 
   describe('delete task test', () => {
+    it('should return 200 when delete a existing task', async () => {
+      const id = (await request
+        .post('/api/task')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+          'name': '12345',
+          'description': 'abcdefgh',
+          'excerption': 'abcdefgh'
+        })
+        .expect(200)).body.data;
+      return request
+        .delete('/api/task/' + id)
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+        })
+        .expect(200);
+    });
+
+    it('should return 404 when delete a not existing task', async () => {
+      return request
+        .delete('/api/task/5a4d0ad5baefdf2b06ad3726')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+        })
+        .expect(404)
+        .then(req =>
+          assert.strictEqual(req.body.message, 'Task does not exist')
+        );
+    });
+  });
+
+  describe('find task test', () => {
     it('should return 200 when everything is okay', async () => {
       // 文档里啥也没说，一会儿看代码
+    });
+  });
+
+  describe('get task test', () => {
+    it('should return 200 when everything is okay', async () => {
+      const id = (await request
+        .post('/api/task')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+          'name': '12345',
+          'description': 'abcdefgh',
+          'excerption': 'abcdefgh'
+        })
+        .expect(200)).body.data;
+      return request
+        .get('/api/task/' + id)
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+        })
+        .expect(200)
+        .then(req =>
+          assert.deepStrictEqual(filterObjectField(req.body.data, ['name', 'description', 'excerption']), {
+            'name': '12345',
+            'description': 'abcdefgh',
+            'excerption': 'abcdefgh'
+          })
+
+        );
     });
   });
 
