@@ -25,28 +25,8 @@ describe('Task API test', () => {
     await stopServer();
   });
 
-  describe('create task test', () => {
-    it('should return 200 when everything is okay', async () => {
-      return request
-        .post('/api/task')
-        .set('Authorization', 'Bearer ' + jwtData)
-        .send({
-          'name': '12345',
-          'description': 'abcdefgh',
-          'excerption': 'abcdefgh'
-        })
-        .expect(200);
-    });
-  });
-
-  describe('delete task test', () => {
-    it('should return 200 when everything is okay', async () => {
-      // 文档里啥也没说，一会儿看代码
-    });
-  });
-
-  describe('patch task test', () => {
-    it('should return 400 when updating invalid status', async () => {
+  describe('create assignment test', () => {
+    it('should return 400 when task is not at PUBLISHED status', async () => {
       const id = (await request
         .post('/api/task')
         .set('Authorization', 'Bearer ' + jwtData)
@@ -57,16 +37,21 @@ describe('Task API test', () => {
         })
         .expect(200)).body.data;
       return request
-        .patch('/api/task/' + id)
+        .post('/api/assignment')
         .set('Authorization', 'Bearer ' + jwtData)
         .send({
-          name: '1234',
-          status: 'SUBMITTED'
+          task: id
         })
         .expect(400)
         .then(req =>
-          assert.strictEqual(req.body.message, 'Invalid status')
+          assert.strictEqual(req.body.message, 'Task is not at PUBLISHED status')
         );
+    });
+  });
+
+  describe('delete assignment test', () => {
+    it('should return 200 when everything is okay', async () => {
+      // 文档里啥也没说，一会儿看代码
     });
   });
 });
