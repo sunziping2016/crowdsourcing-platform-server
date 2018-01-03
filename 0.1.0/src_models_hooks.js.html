@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>src/models/hooks.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html">RedisSession</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#genId">genId</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#load">load</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#loadAndRemove">loadAndRemove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#remove">remove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#removeByIndex">removeByIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#save">save</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_assignments-Assignment.html">Assignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_assignments-Assignment.html#toPlainObject">toPlainObject</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html">Jwt</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#getSecretKey">getSecretKey</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#revoke">revoke</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#setSecretKey">setSecretKey</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#sign">sign</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#verify">verify</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_tasks-Task.html">Task</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_tasks-Task.html#toPlainObject">toPlainObject</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_users-User.html">User</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_users-User.html#checkPassword">checkPassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_users-User.html#toPlainObject">toPlainObject</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-server-Server.html">Server</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-server-Server.html#.normalizeConfig">normalizeConfig</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-server-Server.html#start">start</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-server-Server.html#stop">stop</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-api.html">api</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-api_multer.html">api/multer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-api_multer.html#~multer">multer</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-api_utils.html">api/utils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-api_utils.html#~coreToMiddleware">coreToMiddleware</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_assignment.html">core/assignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~createAssignment">createAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~deleteAssignment">deleteAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~findAssignment">findAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~getAssignment">getAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~getAssignmentData">getAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~patchAssignment">patchAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~postAssignmentData">postAssignmentData</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_auth.html">core/auth</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_auth.html#~authenticate">authenticate</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_email.html">core/email</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_email.html#~confirmEmail">confirmEmail</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_email.html#~sendEmail">sendEmail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_errors.html">core/errors</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_task.html">core/task</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~createTask">createTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~deleteTask">deleteTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~findTask">findTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~getTask">getTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~getTaskData">getTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~patchTask">patchTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~postTaskData">postTaskData</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_user.html">core/user</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~createUser">createUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~deleteUser">deleteUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~findUser">findUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~getUser">getUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~getUserData">getUserData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~patchUser">patchUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~postUserData">postUserData</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_utils.html">core/utils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_utils.html#~makeThumbnail">makeThumbnail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-koa-logger.html">koa-logger</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-koa-logger.html#~koaLogger">koaLogger</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-model_session.html">model/session</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_assignments.html">models/assignments</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_hook.html">models/hook</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addCreatedAt">addCreatedAt</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addDeleted">addDeleted</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addFileFields">addFileFields</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addUpdatedAt">addUpdatedAt</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_jwt.html">models/jwt</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_tasks.html">models/tasks</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_users.html">models/users</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-server.html">server</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html">task-templates/guess-number</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentDataToPlainObject">assignmentDataToPlainObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentDataToPlainObject">assignmentDataToPlainObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentStatusChanged">assignmentStatusChanged</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentStatusChanged">assignmentStatusChanged</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~createAssignment">createAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~createAssignment">createAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getAssignmentData">getAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getAssignmentData">getAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getTaskData">getTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getTaskData">getTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentData">postAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentData">postAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentDataMiddleware">postAssignmentDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentDataMiddleware">postAssignmentDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskData">postTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskData">postTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskDataMiddleware">postTaskDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskDataMiddleware">postTaskDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~taskDataToPlainObject">taskDataToPlainObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~taskDataToPlainObject">taskDataToPlainObject</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#getTaskTypes">getTaskTypes</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/models/hooks.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 一些常用的Mongoose钩子（中间件）函数。具体可以参见[Mongoose Middleware](http://mongoosejs.com/docs/middleware.html)。
+ *
+ * @module models/hook
+ */
+const fs = require('fs');
+const path = require('path');
+const logger = require('winston');
+
+/**
+ * 向schema对象添加一个自动初始化新文档对象某字段为当前时间的钩子。这个钩子对于`save`、`update`
+ * 和`findOneAndUpdate`操作有效。注意：该钩子对`insertMany`无效。
+ *
+ * @param schema {mongoose.Schema} schema对象
+ * @param field {string} 可选，字段名称，默认为`createdAt`
+ */
+function addCreatedAt(schema, field) {
+  if (!field)
+    field = 'createdAt';
+  schema.pre('save', function (next) {
+    if (this.isNew)
+      this[field] = new Date();
+    next();
+  });
+  schema.pre('findOneAndUpdate', function () {
+    const update = this.getUpdate();
+    update['$setOnInsert'] = update['$setOnInsert'] || {};
+    update['$setOnInsert'][field] = new Date();
+  });
+  schema.pre('update', function () {
+    const update = this.getUpdate();
+    update[field] = new Date();
+    update['$setOnInsert'] = update['$setOnInsert'] || {};
+    update['$setOnInsert'][field] = new Date();
+  });
+}
+
+/**
+ * 向schema对象添加一个在文档更新时，把某字段设为当前时间的钩子。这个钩子对于`save`、`update`
+ * 和`findOneAndUpdate`操作有效。注意：该钩子对`insertMany`无效。
+ *
+ * @param schema {mongoose.Schema} schema对象
+ * @param field {string} 可选，字段名称，默认为`updatedAt`
+ */
+function addUpdatedAt(schema, field) {
+  if (!field)
+    field = 'updatedAt';
+  schema.pre('save', function (next) {
+    if (this.isModified())
+      this[field] = new Date();
+    next();
+  });
+  schema.pre('findOneAndUpdate', function () {
+    const update = this.getUpdate();
+    update[field] = new Date();
+  });
+  schema.pre('update', function () {
+    const update = this.getUpdate();
+    update[field] = new Date();
+  });
+}
+
+/**
+ * 向schema对象添加一个软删除的钩子。这个钩子对于`save`、`update`和`findOneAndUpdate`操作有效。
+ * 注意：该钩子对`insertMany`无效。此外添加了`deleted`和`notDeleted`的query helper，并添加了
+ * delete方法。
+ *
+ * @param schema {mongoose.Schema} schema对象
+ * @param field {string} 可选，字段名称，默认为`deleted`
+ */
+function addDeleted(schema, field) {
+  if (!field)
+    field = 'deleted';
+  schema.pre('save', function (next) {
+    if (this.isNew &amp;&amp; !this[field])
+      this[field] = false;
+    next();
+  });
+  schema.pre('findOneAndUpdate', function () {
+    const update = this.getUpdate();
+    update['$setOnInsert'] = update['$setOnInsert'] || {};
+    if (!update['$setOnInsert'][field])
+      update['$setOnInsert'][field] = false;
+  });
+  schema.pre('update', function () {
+    const update = this.getUpdate();
+    update['$setOnInsert'] = update['$setOnInsert'] || {};
+    if (!update['$setOnInsert'][field])
+      update['$setOnInsert'][field] = false;
+  });
+  schema.query.deleted = function (deleted) {
+    return this.where(field).eq(true);
+  };
+  schema.query.notDeleted = function () {
+    return this.where(field).ne(true);
+  };
+  schema.methods.delete = function () {
+    this[field] = true;
+    return this.save();
+  };
+}
+
+/**
+ * 向schema对象添加一个在文档某些对应于文件的字段发生变化时，自动删除旧文件的钩子。该钩子仅对于
+ * `save`和`remove`操作有效。
+ *
+ * @param schema {mongoose.Schema} schema对象
+ * @param fields {Array&lt;string>} 字段集合
+ * @param uploadDir {string} 可选，上传的目录，默认为当前目录
+ */
+function addFileFields(schema, fields, uploadDir) {
+  if (fields.length === 0)
+    return;
+  if (uploadDir === undefined)
+    uploadDir = '';
+  function errLogger(filename) {
+    return err => {
+      if (err) {
+        logger.error(`Failed to delete file "${filename}".`);
+        logger.error(err);
+      }
+    };
+  }
+  schema.post('init', doc => {
+    for (let field of fields)
+      doc['_' + field] = doc[field];
+  });
+  schema.post('save', doc => {
+    for (let field of fields) {
+      const oldFilename = doc['_' + field];
+      if (oldFilename &amp;&amp; oldFilename !== doc[field])
+        fs.unlink(path.join(uploadDir, oldFilename), errLogger(oldFilename));
+    }
+  });
+
+  schema.post('remove', doc => {
+    for (let field of fields) {
+      const oldFilename = doc['_' + field];
+      if (oldFilename)
+        fs.unlink(path.join(uploadDir, oldFilename), errLogger(oldFilename));
+    }
+  });
+}
+
+module.exports = {
+  addCreatedAt,
+  addUpdatedAt,
+  addDeleted,
+  addFileFields
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jan 03 2018 18:17:33 GMT+0000 (UTC) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

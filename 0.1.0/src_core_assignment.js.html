@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>src/core/assignment.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html">RedisSession</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#genId">genId</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#load">load</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#loadAndRemove">loadAndRemove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#remove">remove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#removeByIndex">removeByIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-model_session-RedisSession.html#save">save</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_assignments-Assignment.html">Assignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_assignments-Assignment.html#toPlainObject">toPlainObject</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html">Jwt</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#getSecretKey">getSecretKey</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#revoke">revoke</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#setSecretKey">setSecretKey</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#sign">sign</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_jwt-Jwt.html#verify">verify</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_tasks-Task.html">Task</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_tasks-Task.html#toPlainObject">toPlainObject</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-models_users-User.html">User</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_users-User.html#checkPassword">checkPassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_users-User.html#toPlainObject">toPlainObject</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="module-server-Server.html">Server</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-server-Server.html#.normalizeConfig">normalizeConfig</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-server-Server.html#start">start</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-server-Server.html#stop">stop</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-api.html">api</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-api_multer.html">api/multer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-api_multer.html#~multer">multer</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-api_utils.html">api/utils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-api_utils.html#~coreToMiddleware">coreToMiddleware</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_assignment.html">core/assignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~createAssignment">createAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~deleteAssignment">deleteAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~findAssignment">findAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~getAssignment">getAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~getAssignmentData">getAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~patchAssignment">patchAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_assignment.html#~postAssignmentData">postAssignmentData</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_auth.html">core/auth</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_auth.html#~authenticate">authenticate</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_email.html">core/email</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_email.html#~confirmEmail">confirmEmail</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_email.html#~sendEmail">sendEmail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_errors.html">core/errors</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_task.html">core/task</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~createTask">createTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~deleteTask">deleteTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~findTask">findTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~getTask">getTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~getTaskData">getTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~patchTask">patchTask</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_task.html#~postTaskData">postTaskData</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_user.html">core/user</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~createUser">createUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~deleteUser">deleteUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~findUser">findUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~getUser">getUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~getUserData">getUserData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~patchUser">patchUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_user.html#~postUserData">postUserData</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-core_utils.html">core/utils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-core_utils.html#~makeThumbnail">makeThumbnail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-koa-logger.html">koa-logger</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-koa-logger.html#~koaLogger">koaLogger</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-model_session.html">model/session</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_assignments.html">models/assignments</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_hook.html">models/hook</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addCreatedAt">addCreatedAt</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addDeleted">addDeleted</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addFileFields">addFileFields</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-models_hook.html#~addUpdatedAt">addUpdatedAt</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_jwt.html">models/jwt</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_tasks.html">models/tasks</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-models_users.html">models/users</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-server.html">server</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html">task-templates/guess-number</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentDataToPlainObject">assignmentDataToPlainObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentDataToPlainObject">assignmentDataToPlainObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentStatusChanged">assignmentStatusChanged</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~assignmentStatusChanged">assignmentStatusChanged</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~createAssignment">createAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~createAssignment">createAssignment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getAssignmentData">getAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getAssignmentData">getAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getTaskData">getTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~getTaskData">getTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentData">postAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentData">postAssignmentData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentDataMiddleware">postAssignmentDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postAssignmentDataMiddleware">postAssignmentDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskData">postTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskData">postTaskData</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskDataMiddleware">postTaskDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~postTaskDataMiddleware">postTaskDataMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~taskDataToPlainObject">taskDataToPlainObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-task-templates_guess-number.html#~taskDataToPlainObject">taskDataToPlainObject</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#getTaskTypes">getTaskTypes</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/core/assignment.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 作业模块。这里作业的接口分为两类，一类是通用接口，一类是特殊接口。
+ * @module core/assignment
+ */
+
+const ajv = new (require('ajv'))();
+const {errorsEnum, coreOkay, coreValidate, coreAssert} = require('./errors');
+
+const idRegex = /^[a-f\d]{24}$/i;
+
+const querySchema = ajv.compile({
+  type: 'object',
+  properties: {
+    populate: {type: 'string', enum: ['false', 'true']}
+  },
+  additionalProperties: false
+});
+
+const queryWithDataSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    populate: {type: 'string', enum: ['false', 'true']},
+    data: {type: 'string', enum: ['false', 'true']}
+  },
+  additionalProperties: false
+});
+
+const dataSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    data: {type: 'string', enum: ['false', 'true']}
+  },
+  additionalProperties: false
+});
+
+const createAssignmentSchema = ajv.compile({
+  type: 'object',
+  required: ['task'],
+  properties: {
+    task: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+    data: {type: 'object'}
+  },
+  additionalProperties: false
+});
+
+/**
+ * 创建任务，用户必须具有subscriber权限。
+ *  - ajax: POST /api/assignment
+ *  - socket.io: emit assignment:create
+ * @param params {object}
+ *   - query {object}
+ *     - populate {boolean} 是否返回
+ *     - data {boolean} 是否返回数据
+ *   - data {object}
+ *     - task {string} 任务
+ *     - data {object} 额外的数据
+ * @param global
+ * @return {Promise&lt;object>}
+ */
+async function createAssignment(params, global) {
+  const {users, tasks, taskTemplates, assignments} = global;
+  coreAssert(params.auth &amp;&amp; (params.auth.role &amp; users.roleEnum.SUBSCRIBER),
+    errorsEnum.PERMISSION, 'Requires subscriber privilege');
+  coreValidate(queryWithDataSchema, params.query);
+  coreValidate(createAssignmentSchema, params.data);
+  const task = await tasks.findById(params.data.task).notDeleted().select('+data');
+  coreAssert(task, errorsEnum.INVALID, 'Task does not exist');
+  coreAssert(task.status === tasks.statusEnum.PUBLISHED,
+    errorsEnum.INVALID, 'Task is not at PUBLISHED status');
+  coreAssert(task.type !== undefined &amp;&amp; taskTemplates[task.type] !== undefined &amp;&amp;
+    taskTemplates[task.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  const taskType = taskTemplates[task.type];
+  const assignment = new assignments({
+    task: task._id,
+    publisher: task.publisher,
+    subscriber: params.auth.uid,
+    type: task.type,
+    status: assignments.statusEnum.EDITING,
+    valid: false
+  });
+  if (typeof taskType.createAssignment === 'function') {
+    const data = await taskType.createAssignment(task, assignment, params, global);
+    if (data !== undefined)
+      return data;
+  }
+  await assignment.save();
+  if (params.query.populate === 'true') {
+    const data = assignment.toPlainObject(params.auth);
+    if (params.query.data === 'true')
+      data.data = (typeof taskType.assignmentDataToPlainObject === 'function' &amp;&amp;
+        taskType.assignmentDataToPlainObject(assignment, params.auth)) || {};
+    return coreOkay({
+      data
+    });
+  }
+  return coreOkay({data: assignment._id});
+}
+
+/**
+ * 获取作业详情。
+ *  - ajax: GET /api/assignment/:id
+ *  - socket.io: emit assignment:get
+ * @param params params {object}
+ *  - auth {object} 权限
+ *  - id {string} 要获取详情的作业的id
+ * @param global
+ * @return {Promise&lt;object>}
+ */
+async function getAssignment(params, global) {
+  const {assignments} = global;
+  coreAssert(params.id &amp;&amp; idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted();
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(params.auth &amp;&amp; (assignment.publisher.equals(params.auth.uid) ||
+    assignment.subscriber.equals(params.auth.uid)),
+    // eslint-disable-next-line
+    errorsEnum.PERMISSION, 'Permission denied'
+  );
+  return coreOkay({
+    data: assignment.toPlainObject(params.auth)
+  });
+}
+
+const patchAssignmentSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    status: {type: 'string', enum: ['SUBMITTED', 'ADMITTED', 'REJECTED']}
+  },
+  additionalProperties: false
+});
+
+/**
+ * 更改作业的状态，可能的更改包括订阅者从编辑到提交（作业必须为valid）和发布者从提交到接受或拒绝
+ *  - ajax: PATCH /api/assignment/:id
+ *  - socket.io: emit assignment:patch
+ * @param params {object} 请求的数据
+ *   - query {object} 请求的query
+ *     - populate {boolean}
+ *   - data {object} 请求的status
+ *     - status {string} 可选，状态
+ * @param global {object}
+ * @return {Promise&lt;object>}
+ */
+async function patchAssignment(params, global) {
+  const {assignments, taskTemplates} = global;
+  coreAssert(params.id &amp;&amp; idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  coreValidate(querySchema, params.query);
+  coreValidate(patchAssignmentSchema, params.data);
+  if (params.data.status !== undefined)
+    params.data.status = assignments.statusEnum[params.data.status];
+  const assignment = await assignments.findById(params.id).notDeleted().select('+data');
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(taskTemplates[assignment.type] !== undefined &amp;&amp;
+    taskTemplates[assignment.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  const taskType = taskTemplates[assignment.type];
+  const isPublisher = params.auth &amp;&amp; assignment.publisher.equals(params.auth.uid);
+  const isSubscriber = params.auth &amp;&amp; assignment.subscriber.equals(params.auth.uid);
+  coreAssert(isPublisher || isSubscriber, errorsEnum.PERMISSION, 'Permission denied');
+  coreAssert(params.data.status !== assignments.statusEnum.SUBMITTED ||
+    (isSubscriber &amp;&amp; assignment.status === assignments.statusEnum.EDITING &amp;&amp; assignment.valid),
+    // eslint-disable-next-line indent
+    errorsEnum.INVALID, 'Invalid status'
+  );
+  coreAssert((params.data.status !== assignments.statusEnum.ADMITTED &amp;&amp;
+    params.data.status !== assignments.statusEnum.REJECTED) ||
+    (isPublisher &amp;&amp; assignment.status === assignments.statusEnum.SUBMITTED),
+    // eslint-disable-next-line indent
+    errorsEnum.INVALID, 'Invalid status'
+  );
+  const oldStatus = assignment.status;
+  Object.assign(assignment, params.data);
+  if (assignment.status !== oldStatus &amp;&amp; typeof taskType.assignmentStatusChanged === 'function')
+    await taskType.assignmentStatusChanged(assignment, params, global);
+  await assignment.save();
+  return coreOkay({
+    data: params.query.populate === 'true'
+      ? assignment.toPlainObject(params.auth) : assignment._id
+  });
+}
+
+const findAssignmentSchema = ajv.compile({
+  type: 'object',
+  properties: {
+    populate: {type: 'string', enum: ['false', 'true']},
+    count: {type: 'string', enum: ['false', 'true']},
+    filter: {
+      type: 'object',
+      properties: {
+        search: {type: 'string'},
+        task: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+        publisher: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+        subscriber: {type: 'string', pattern: '[a-fA-F\\d]{24}'},
+        type: {type: 'string', pattern: '^[-_a-zA-Z\\d]+$'},
+        status: {type: 'string', enum: ['EDITING', 'SUBMITTED', 'ADMITTED', 'REJECTED']},
+        valid: {type: 'string', enum: ['true', 'false']}
+      },
+      additionalProperties: false
+    },
+    limit: {type: 'string', pattern: '^\\d+$'},
+    lastId: {type: 'string', pattern: '[a-fA-F\\d]{24}'}
+  },
+  additionalProperties: false
+});
+
+/**
+ * 搜索作业。只有发布者或订阅者可以使用。
+ *  - ajax: GET /api/assignment
+ *  - socket.io: emit assignment:find
+ * @param params 请求数据
+ *   - auth {object} 权限
+ *   - query {object} 请求的query
+ *     - populate {boolean} 是否展开数据
+ *     - count {boolean} 统计总数，需要额外的开销
+ *     - filter {Object.&lt;string, string>}
+ *         - search {string} 全文检索
+ *         - task {string}
+ *         - publisher {string} 对于发布者，这个值只能是自己，建议以发布者身份搜索时永远设置这个值。
+ *         - subscriber {string} 对于订阅者，这个值只能是自己，建议以订阅者身份搜索时永远设置这个值。
+ *         - type {string}
+ *         - status {string}
+ *         - valid {boolean}
+ *     - limit {number} 可选，小于等于50大于0数字，默认为10
+ *     - lastId {string} 可选，请求的上一个Id
+ * @param global
+ * @return {Promise&lt;object>}
+ */
+async function findAssignment(params, global) {
+  const {assignments, users} = global;
+  coreValidate(findAssignmentSchema, params.query);
+  coreAssert(params.auth &amp;&amp; (params.auth.role &amp; (users.roleEnum.SUBSCRIBER | users.roleEnum.PUBLISHER)),
+    errorsEnum.PERMISSION, 'Permission denied');
+  const isSubscriber = !!(params.auth.role &amp; users.roleEnum.SUBSCRIBER);
+  const isPublisher = !!(params.auth.role &amp; users.roleEnum.PUBLISHER);
+  let limit;
+  if (params.query.limit !== undefined) {
+    limit = parseInt(params.query.limit);
+    coreAssert(limit > 0 &amp;&amp; limit &lt; 50, errorsEnum.SCHEMA, 'Invalid limit');
+  } else
+    limit = 10;
+  params.query.filter = params.query.filter || {};
+  const and = params.query.filter.$and = [];
+  if (params.query.filter.search !== undefined) {
+    const search = params.query.filter.search
+      .split(/\s+/).filter(x => x)
+      .map(x => new RegExp(x.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&amp;'), 'i'));
+    delete params.query.filter.search;
+    if (search.length !== 0) {
+      const or = [];
+      search.forEach(x => {
+        or.push({summary: {$regex: x}});
+      });
+      and.push({$or: or});
+    }
+  }
+  if (params.query.valid !== undefined)
+    params.query.valid = params.query.valid === 'true';
+  if (params.query.filter.status !== undefined)
+    params.query.filter.status = assignments.statusEnum[params.query.filter.status];
+  if (isPublisher &amp;&amp; isSubscriber) {
+    const setSubscriber = params.query.filter.subscriber !== undefined;
+    const setPublisher = params.query.filter.publisher !== undefined;
+    if (setSubscriber &amp;&amp; setPublisher)
+      coreAssert(params.query.filter.subscriber === params.auth.uid ||
+        params.query.filter.publisher === params.auth.uid,
+        // eslint-disable-next-line
+        errorsEnum.SCHEMA, 'Invalid subscriber or publisher');
+    else if (setSubscriber) {
+      if (params.query.filter.subscriber !== params.auth.uid)
+        params.query.filter.publisher = params.auth.uid;
+    } else if (setPublisher) {
+      if (params.query.filter.publisher !== params.auth.uid)
+        params.query.filter.subscriber = params.auth.uid;
+    } else
+      and.push({
+        $or: [
+          {subscriber: params.auth.uid},
+          {publisher: params.auth.uid}
+        ]
+      });
+  } else if (isPublisher) {
+    coreAssert(params.query.filter.publisher === undefined ||
+      params.query.filter.publisher === params.auth.uid,
+      // eslint-disable-next-line
+      errorsEnum.INVALID, 'Invalid publisher');
+    params.query.filter.publisher = params.auth.uid;
+  } else {
+    coreAssert(params.query.filter.subscriber === undefined ||
+      params.query.filter.subscriber === params.auth.uid,
+      // eslint-disable-next-line
+      errorsEnum.INVALID, 'Invalid subscriber');
+    params.query.filter.subscriber = params.auth.uid;
+  }
+  if (params.query.filter.$and.length === 0)
+    delete params.query.filter.$and;
+  const result = {};
+  if (params.query.lastId !== undefined) {
+    params.query.filter._id = {$lt: params.query.lastId};
+    result.lastId = params.query.lastId;
+  }
+  if (params.query.populate === 'true') {
+    result.data = (await assignments.find(params.query.filter)
+      .notDeleted()
+      .sort({_id: -1})
+      .limit(limit)).map(x => x.toPlainObject(params.auth));
+    if (result.data.length !== 0)
+      result.lastId = result.data[result.data.length - 1]._id;
+  } else {
+    result.data = (await assignments.find(params.query.filter)
+      .notDeleted()
+      .sort({_id: -1})
+      .select({_id: 1})
+      .limit(limit)).map(x => x._id);
+    if (result.data.length !== 0)
+      result.lastId = result.data[result.data.length - 1];
+  }
+  if (params.query.count === 'true') {
+    delete params.query.filter._id;
+    result.total = await assignments.count(params.query.filter).notDeleted();
+  }
+  return coreOkay({data: result});
+}
+
+/**
+ * 删除作业。必须是任务的订阅者或者任务的提交者。
+ * @param params
+ * @param global
+ * @return {Promise&lt;void>}
+ */
+async function deleteAssignment(params, global) {
+  const {assignments} = global;
+  coreAssert(params.id &amp;&amp; idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted();
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  const isPublisher = params.auth &amp;&amp; assignment.publisher.equals(params.auth.uid);
+  const isSubscriber = params.auth &amp;&amp; assignment.subscriber.equals(params.auth.uid);
+  coreAssert(isPublisher || isSubscriber, errorsEnum.PERMISSION, 'Permission denied');
+  await assignment.delete();
+  return coreOkay();
+}
+
+/**
+ * 上传作业数据，提交者必须为作业的订阅者，且作业处于`EDITING`状态
+ * @param ctx {object} koa的context
+ *   - params {object} 请求的数据
+ *     - query {object} 请求的query
+ *       - data {boolean} 是否返回数据，默认false
+ * @return {Promise&lt;void>}
+ */
+async function postAssignmentData(ctx) {
+  const {params, global} = ctx;
+  const {assignments, taskTemplates} = global;
+  coreValidate(dataSchema, params.query);
+  coreAssert(params.id &amp;&amp; idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted().select('+data');
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(assignment.type !== undefined &amp;&amp; taskTemplates[assignment.type] !== undefined &amp;&amp;
+    taskTemplates[assignment.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(params.auth &amp;&amp; assignment.subscriber.equals(params.auth.uid),
+    errorsEnum.PERMISSION, 'Requires subscriber privilege');
+  coreAssert(assignment.status === assignments.statusEnum.EDITING,
+    errorsEnum.INVALID, 'Assignment is not at EDITING status');
+  const taskType = taskTemplates[assignment.type];
+  let data;
+  const next = async () => {
+    if (typeof taskType.postAssignmentData === 'function')
+      data = await taskType.postAssignmentData(assignment, params, global);
+  };
+  if (typeof taskType.postAssignmentDataMiddleware === 'function')
+    await taskType.postAssignmentDataMiddleware(ctx, next);
+  else
+    await next();
+  if (data !== undefined)
+    ctx.body = data;
+  else if (params.query.data === 'true')
+    ctx.body = coreOkay({
+      data: (typeof taskType.assignmentDataToPlainObject === 'function' &amp;&amp;
+        taskType.assignmentDataToPlainObject(assignment, params.auth)) || {}
+    });
+  else
+    ctx.body = coreOkay();
+}
+
+/**
+ * 获取作业数据，可以是作业的发布者，或订阅者
+ * @param ctx {object} koa的context
+ * @return {Promise&lt;void>}
+ */
+async function getAssignmentData(ctx) {
+  const {params, global} = ctx;
+  const {assignments, taskTemplates} = global;
+  coreAssert(params.id &amp;&amp; idRegex.test(params.id), errorsEnum.SCHEMA, 'Invalid id');
+  const assignment = await assignments.findById(params.id).notDeleted().select('+data');
+  coreAssert(assignment, errorsEnum.EXIST, 'Assignment does not exist');
+  coreAssert(assignment.type !== undefined &amp;&amp; taskTemplates[assignment.type] !== undefined &amp;&amp;
+    taskTemplates[assignment.type].meta.enabled, errorsEnum.INVALID, 'Invalid task type');
+  coreAssert(params.auth &amp;&amp; (assignment.subscriber.equals(params.auth.uid) ||
+    assignment.publisher.equals(params.auth.uid)),
+    // eslint-disable-next-line
+    errorsEnum.PERMISSION, 'Permission denied');
+  const taskType = taskTemplates[assignment.type];
+  let data;
+  if (typeof taskType.getAssignmentData === 'function')
+    data = await taskType.getAssignmentData(assignment, params, global);
+  if (data !== undefined)
+    ctx.body = data;
+  else
+    ctx.body = coreOkay({
+      data: (typeof taskType.assignmentDataToPlainObject === 'function' &amp;&amp;
+        taskType.assignmentDataToPlainObject(assignment, params.auth)) || {}
+    });
+}
+
+module.exports = {
+  createAssignment,
+  getAssignment,
+  patchAssignment,
+  findAssignment,
+  deleteAssignment,
+  postAssignmentData,
+  getAssignmentData
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jan 03 2018 18:17:33 GMT+0000 (UTC) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
