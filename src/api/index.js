@@ -32,6 +32,7 @@ const EmailRouter = require('./email');
 const AuthRouter = require('./auth');
 const TaskRouter = require('./task');
 const AssignmentRouter = require('./assignment');
+const TaskTypeRouter = require('./task-type');
 
 async function errorHandler(ctx, next) {
   try {
@@ -83,6 +84,7 @@ module.exports = function (global) {
   const authRouter = new AuthRouter();
   const taskRouter = new TaskRouter(global);
   const assignmentRouter = new AssignmentRouter();
+  const taskTypeRouter = new TaskTypeRouter(global);
   router.use(errorHandler);
   router.use(bodyParser({
     onerror: (e, ctx) => coreThrow(errorsEnum.PARSE, 'Cannot parse body')
@@ -123,5 +125,6 @@ module.exports = function (global) {
   router.use('/auth', authRouter.routes(), authRouter.allowedMethods());
   router.use('/task', taskRouter.routes(), taskRouter.allowedMethods());
   router.use('/assignment', assignmentRouter.routes(), assignmentRouter.allowedMethods());
+  router.use('/tasktype', taskTypeRouter.routes(), taskTypeRouter.allowedMethods());
   return router;
 };

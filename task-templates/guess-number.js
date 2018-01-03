@@ -142,7 +142,7 @@ async function postTaskData(task, params, global) {
   cleanFiles(task, config['upload-dir']);
   const dirname = randomAlnumString(40);
   const dir = path.join(config['upload-dir'], dirname);
-  await promisify(fs.mkdir)(dirname);
+  await promisify(fs.mkdir)(dir);
   params.data.dir = dir;
   if (params.data.total !== undefined) {
     task.total = params.data.total;
