@@ -227,13 +227,18 @@ async function getTaskData(task, params, global) {
  */
 function assignmentDataToPlainObject(assignment, auth) {
   if (!assignment.data || assignment.data.signup)
-    return {};
+    return {
+      signup: true
+    };
   const result = {
+    signup: false,
     guessTimes: assignment.data.guesses.length,
     finished: assignment.valid
   };
   if (assignment.valid)
     result.answer = assignment.data.answer;
+  if (assignment.data.compare)
+    result.compare = assignment.data.compare;
   return result;
 }
 
@@ -404,6 +409,7 @@ async function postAssignmentData(assignment, params, global) {
     compare = -1;
   else
     compare = 1;
+  assignment.data.compare = compare;
   if (compare !== 0) {
     const {tasks} = global;
     const task = await tasks.findById(assignment.task).notDeleted().select('+data');
