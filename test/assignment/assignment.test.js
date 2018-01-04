@@ -54,4 +54,28 @@ describe('Task API test', () => {
       // 文档里啥也没说，一会儿看代码
     });
   });
+
+  describe('get assignment test', () => {
+    it('should return 200 when everything is okay', async () => {
+      const id = (await request
+        .post('/api/task')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+          'name': '12345',
+          'description': 'abcdefgh',
+          'excerption': 'abcdefgh'
+        })
+        .expect(200)).body.data;
+      await request
+        .post('/api/assignment')
+        .set('Authorization', 'Bearer ' + jwtData)
+        .send({
+          task: id
+        })
+        .expect(400)
+        .then(req =>
+          assert.strictEqual(req.body.message, 'Task is not at PUBLISHED status')
+        );
+    });
+  });
 });
