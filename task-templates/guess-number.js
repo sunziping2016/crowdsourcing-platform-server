@@ -299,7 +299,7 @@ async function createAssignment(task, assignment, params, global) {
     assignment.markModified('data');
   } else {
     coreAssert((task.total < 0 || task.remain > 0) &&
-      (task.deadline === false || Date.now() <= task.deadline.getTime()),
+      (!task.deadline || Date.now() <= task.deadline.getTime()),
       // eslint-disable-next-line
       errorsEnum.INVALID, 'Task has completed');
     coreAssert(task.data.noSignup || task.data.signedUsers.indexOf(params.auth.uid) !== -1,
