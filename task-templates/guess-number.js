@@ -350,7 +350,7 @@ async function assignmentStatusChanged(assignment, params, global) {
     if (task.data.submitAutoPass && assignment.status === assignments.statusEnum.SUBMITTED)
       assignment.status = assignments.statusEnum.ADMITTED;
     if (task.total > 0 && assignment.status === assignments.statusEnum.ADMITTED)
-      await tasks.findOneAndUpdate({_id: task._id}, {$inc: {'task.remain': -1}}).notDeleted();
+      await tasks.findOneAndUpdate({_id: task._id}, {$inc: {remain: -1}}).notDeleted();
   }
 }
 
